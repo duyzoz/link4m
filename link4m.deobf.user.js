@@ -21,8 +21,8 @@
 // @grant        GM_setClipboard
 // @grant        GM_info
 // @connect      *
-// @updateURL    https://github.com/Dut3ufegfeu/link4m/raw/main/Link4m.user.js
-// @downloadURL  https://github.com/Dut3ufegfeu/link4m/raw/main/Link4m.user.js
+// @updateURL    https://github.com/duyzoz/link4m/blob/main/Link4m.user.js
+// @downloadURL  https://github.com/duyzoz/link4m/blob/main/Link4m.user.js
 // ==/UserScript==
 
 (() => {
