@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         bypass l4m by duydepzai
 // @namespace    local.duydepzai.l4m
-// @version      2.0.0
+// @version      2.1.0
 // @description  Automated Link4m flow and widget resolver
 // @author       duydepzai
 // @match        *://link4m.app/*
@@ -108,6 +108,8 @@
     .btn-sec:hover { background: rgba(79, 184, 232, 0.2); }
     .btn-sec.alt { border-color: rgba(144, 164, 255, 0.35); background: rgba(114, 137, 218, 0.14); color: #dde3ff; }
     .btn-sec.alt:hover { background: rgba(114, 137, 218, 0.22); }
+    .btn-switch { border-color: rgba(247, 185, 85, 0.4); background: rgba(247, 185, 85, 0.12); color: #ffe6aa; font-weight: 800; }
+    .btn-switch:hover { background: rgba(247, 185, 85, 0.22); }
     .pref-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #9bb7c7; cursor: pointer; margin-top: 2px; }
     .pref-row input { accent-color: #55caee; }
     .result-panel { display: none; margin: 0 14px 12px; padding: 10px; border-radius: 12px; background: rgba(46, 125, 85, 0.2); border: 1px solid rgba(88, 196, 138, 0.4); }
@@ -128,7 +130,7 @@
       <div class="panel" id="panel">
         <div class="head" id="dragHead">
           <strong class="title">bypass l4m by duydepzai</strong>
-          <span class="badge">v2.0</span>
+          <span class="badge">v2.1</span>
           <button type="button" class="btn-min" id="btnMin" title="Minimize">−</button>
         </div>
         <div class="status-bar info" id="statusBar">
@@ -147,6 +149,7 @@
             <input class="url-input" id="taskInput" type="text" inputmode="url" placeholder="Task URL (e.g. gavangtv33.cc)" />
           </div>
           <button type="submit" class="btn-main" id="btnStart">Execute</button>
+          <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Switch Task / Campaign</button>
           <div class="row-btns">
             <button type="button" class="btn-sec" id="btnStore">Store</button>
             <button type="button" class="btn-sec alt" id="btnServer">Server</button>
@@ -190,7 +193,7 @@
       statusBar: q('statusBar'), statusMsg: q('statusMsg'), statusClock: q('statusClock'),
       spinner: q('spinner'), progressFill: q('progressFill'), captchaBanner: q('captchaBanner'),
       mainForm: q('mainForm'), taskInput: q('taskInput'), btnStart: q('btnStart'),
-      btnStore: q('btnStore'), btnServer: q('btnServer'), chkRedirect: q('chkRedirect'),
+      btnSwitch: q('btnSwitch'), btnStore: q('btnStore'), btnServer: q('btnServer'), chkRedirect: q('chkRedirect'),
       resultPanel: q('resultPanel'), resultUrl: q('resultUrl'), btnCopy: q('btnCopy'),
       btnOpen: q('btnOpen'), fabBtn: q('fabBtn')
     };
@@ -198,6 +201,7 @@
     setupDragEvents();
     q('btnMin').addEventListener('click', () => setDisplayMode(false));
     q('fabBtn').addEventListener('click', () => setDisplayMode(true));
+    q('btnSwitch').addEventListener('click', forceSwitchCampaign);
     q('btnStore').addEventListener('click', () => openUrl(CONFIG.storeUrl));
     q('btnServer').addEventListener('click', () => openUrl(CONFIG.communityUrl));
     q('btnCopy').addEventListener('click', copyTargetUrl);
@@ -301,7 +305,50 @@
     const isLocked = state.busy || state.autoDetecting;
     state.ui.btnStart.disabled = isLocked;
     state.ui.taskInput.disabled = isLocked;
+    if (state.ui.btnSwitch) state.ui.btnSwitch.disabled = isLocked;
     state.ui.btnStart.textContent = state.busy ? 'Working...' : state.autoDetecting ? 'OCR Scanning...' : 'Execute';
+  }
+
+  async function forceSwitchCampaign() {
+    try {
+      updateStatus('Flushing cookies & requesting new campaign...', { tone: 'warn', spin: true });
+      if (state.ui.btnSwitch) {
+        state.ui.btnSwitch.disabled = true;
+        state.ui.btnSwitch.textContent = 'Switching...';
+      }
+
+      try {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${location.hostname}`;
+          const rootDomain = location.hostname.split('.').slice(-2).join('.');
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
+        }
+      } catch {}
+
+      try { localStorage.clear(); } catch {}
+      try { sessionStorage.clear(); } catch {}
+
+      try {
+        if (typeof GM_setValue === 'function') {
+          GM_setValue('_l4m_cid_default', typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+        }
+      } catch {}
+
+      const cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete('token');
+      cleanUrl.searchParams.delete('uuid');
+      cleanUrl.searchParams.set('_l4m_switch', String(Date.now()));
+
+      await sleep(400);
+      location.replace(cleanUrl.href);
+    } catch (err) {
+      console.error('[bypass-l4m] Switch error', err);
+      location.reload();
+    }
   }
 
   function presentResult(url) {

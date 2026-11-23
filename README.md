@@ -10,6 +10,7 @@ Install using Tampermonkey or Violentmonkey on any modern browser:
 
 ## Features & Improvements
 
+- **Force Switch Campaign (1-Click)**: Instant task rotation by clearing cookies, session caches, and regenerated client fingerprints.
 - **Interactive reCAPTCHA Handling**: Highlights, scrolls to, and focuses the target reCAPTCHA frame automatically so you don't need to hunt for the verification box.
 - **Draggable & Responsive UI**: Clean Cyberpunk HUD with pointer dragging support and dynamic viewport scaling across both desktop and mobile layouts.
 - **Enhanced OCR Engine**: Canvas preprocessing pipeline with automated grayscale/contrast adjustments, dual-engine fallback, and wildcard matching.
