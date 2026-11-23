@@ -149,8 +149,8 @@
             <input class="url-input" id="taskInput" type="text" inputmode="url" placeholder="Task URL (e.g. gavangtv33.cc)" />
           </div>
           <button type="submit" class="btn-main" id="btnStart">Execute</button>
-          <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Switch Task / Campaign</button>
           <div class="row-btns">
+            <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Switch Task</button>
             <button type="button" class="btn-sec" id="btnStore">Store</button>
             <button type="button" class="btn-sec alt" id="btnServer">Server</button>
           </div>
@@ -309,12 +309,17 @@
     state.ui.btnStart.textContent = state.busy ? 'Working...' : state.autoDetecting ? 'OCR Scanning...' : 'Execute';
   }
 
-  async function forceSwitchCampaign() {
+  async function forceSwitchCampaign(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
     try {
-      updateStatus('Flushing cookies & requesting new campaign...', { tone: 'warn', spin: true });
+      updateStatus('Resetting campaign session...', { tone: 'warn', spin: true });
       if (state.ui.btnSwitch) {
         state.ui.btnSwitch.disabled = true;
-        state.ui.btnSwitch.textContent = 'Switching...';
+        state.ui.btnSwitch.textContent = 'Resetting...';
       }
 
       try {
@@ -324,8 +329,11 @@
           const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${location.hostname}`;
-          const rootDomain = location.hostname.split('.').slice(-2).join('.');
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
+          const parts = location.hostname.split('.');
+          if (parts.length > 1) {
+            const rootDomain = parts.slice(-2).join('.');
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
+          }
         }
       } catch {}
 
@@ -334,20 +342,35 @@
 
       try {
         if (typeof GM_setValue === 'function') {
-          GM_setValue('_l4m_cid_default', typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+          const newCid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+          GM_setValue('_l4m_cid_default', newCid);
+          GM_setValue('_traffic_cid_default', newCid);
         }
       } catch {}
 
-      const cleanUrl = new URL(location.href);
-      cleanUrl.searchParams.delete('token');
-      cleanUrl.searchParams.delete('uuid');
-      cleanUrl.searchParams.set('_l4m_switch', String(Date.now()));
+      const host = detectBackendHost();
+      const alias = readInputVal('alias');
+      if (alias) {
+        void httpRequest(`${host}/links/reset-session`, {
+          method: 'POST',
+          headers: getFormHeaders(location.href),
+          body: serializeParams({ alias, refresh: '1', ts: Date.now() }),
+          timeoutMs: 3000
+        }).catch(() => {});
+      }
 
-      await sleep(400);
-      location.replace(cleanUrl.href);
+      updateStatus('Reloading new task...', { tone: 'info', spin: true });
+      await sleep(300);
+
+      const u = new URL(location.href);
+      u.searchParams.delete('token');
+      u.searchParams.delete('uuid');
+      u.searchParams.set('_r', String(Date.now()));
+
+      window.location.href = u.href;
     } catch (err) {
-      console.error('[bypass-l4m] Switch error', err);
-      location.reload();
+      console.error('[bypass-l4m] Switch fault', err);
+      window.location.reload();
     }
   }
 
