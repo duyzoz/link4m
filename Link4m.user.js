@@ -599,7 +599,7 @@
           </div>
           <button type="submit" class="btn-main" id="btnStart">⚡ Bắt đầu Bypass</button>
           <div class="row-btns">
-            <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Đổi nhiệm vụ</button>
+            <button type="button" class="btn-sec btn-switch" id="btnVisit">🌐 Truy cập web</button>
             <button type="button" class="btn-sec btn-discord" id="btnDiscord">
               ${DISCORD_ICON} Discord
             </button>
@@ -649,7 +649,7 @@
       statusBar: q('statusBar'), statusMsg: q('statusMsg'), statusClock: q('statusClock'),
       spinner: q('spinner'), progressFill: q('progressFill'), captchaBanner: q('captchaBanner'),
       mainForm: q('mainForm'), taskInput: q('taskInput'), btnStart: q('btnStart'),
-      btnSwitch: q('btnSwitch'), btnDiscord: q('btnDiscord'), chkRedirect: q('chkRedirect'),
+      btnVisit: q('btnVisit'), btnDiscord: q('btnDiscord'), chkRedirect: q('chkRedirect'),
       resultPanel: q('resultPanel'), resultUrl: q('resultUrl'), btnCopy: q('btnCopy'),
       btnOpen: q('btnOpen'), fabBtn: q('fabBtn')
     };
@@ -657,7 +657,7 @@
     setupDragEvents();
     q('btnMin').addEventListener('click', () => setDisplayMode(false));
     q('fabBtn').addEventListener('click', () => setDisplayMode(true));
-    q('btnSwitch').addEventListener('click', forceSwitchCampaign);
+    q('btnVisit').addEventListener('click', visitTaskWebsite);
     q('btnDiscord').addEventListener('click', () => openUrl(CONFIG.communityUrl));
     q('btnCopy').addEventListener('click', copyTargetUrl);
     q('btnOpen').addEventListener('click', () => state.finalUrl && openUrl(state.finalUrl));
@@ -760,45 +760,35 @@
     const isLocked = state.busy || state.autoDetecting;
     state.ui.btnStart.disabled = isLocked;
     state.ui.taskInput.disabled = isLocked;
-    if (state.ui.btnSwitch) state.ui.btnSwitch.disabled = isLocked;
     state.ui.btnStart.textContent = state.busy ? 'Đang xử lý...' : state.autoDetecting ? 'Đang quét OCR...' : '⚡ Bắt đầu Bypass';
   }
 
-  async function forceSwitchCampaign(e) {
+  function visitTaskWebsite(e) {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
-      e.stopImmediatePropagation();
     }
-    try {
-      updateStatus('Đang làm mới nhiệm vụ...', { tone: 'warn', spin: true });
-      if (state.ui.btnSwitch) {
-        state.ui.btnSwitch.disabled = true;
-        state.ui.btnSwitch.textContent = 'Đang đổi...';
-      }
-
-      // 1. Wipe local and session storages
-      try { localStorage.clear(); } catch {}
-      try { sessionStorage.clear(); } catch {}
-
-      // 2. Generate fresh randomized Client ID and spoofed fingerprinters
-      const freshCid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    const val = (state.ui.taskInput?.value || '').trim();
+    if (val) {
       try {
-        if (typeof GM_setValue === 'function') {
-          GM_setValue('_l4m_cid_default', freshCid);
-          GM_setValue('_traffic_cid_default', freshCid);
-        }
+        const target = cleanTaskDomain(val);
+        openUrl(target);
+        updateStatus(`✓ Đang mở trang: ${target}`, { tone: 'ok' });
+        return;
       } catch {}
-
-      updateStatus('Đang tải lại trang...', { tone: 'info', spin: true });
-      await sleep(300);
-
-      // Reload EXACT current URL cleanly without appending unknown query params that trigger /go/not-found
-      window.location.reload();
-    } catch (err) {
-      console.error('[bypass-l4m] Switch error', err);
-      window.location.reload();
     }
+
+    // Fallback: check DOM instructions directly for domain
+    const wrapper = document.getElementById('advertise-html-wrapper');
+    const meta = extractInstructionMetadata(wrapper);
+    if (meta.exactDomains.length > 0) {
+      const target = `https://${meta.exactDomains[0]}`;
+      openUrl(target);
+      updateStatus(`✓ Đang mở trang: ${target}`, { tone: 'ok' });
+      return;
+    }
+
+    updateStatus('Chưa có URL nhiệm vụ để truy cập', { tone: 'warn' });
   }
 
   function presentResult(url) {
