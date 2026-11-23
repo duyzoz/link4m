@@ -2,7 +2,7 @@
 // @name         bypass l4m by duydepzai
 // @namespace    local.duydepzai.l4m
 // @version      3.0.0
-// @description  Automated Link4m flow, smart DOM refactor, and widget resolver
+// @description  Automated Link4m flow and widget resolver
 // @author       duydepzai
 // @match        *://link4m.app/*
 // @match        *://*.link4m.app/*
@@ -12,7 +12,7 @@
 // @match        *://*.link4m.net/*
 // @match        *://link4m.org/*
 // @match        *://*.link4m.org/*
-// @run-at       document-start
+// @run-at       document-idle
 // @grant        GM_xmlhttpRequest
 // @grant        GM.xmlHttpRequest
 // @grant        GM_getValue
@@ -66,143 +66,6 @@
     autoRedirect: true,
     cachedTesseractLoader: null
   };
-
-  const GLOBAL_CLEANER_STYLES = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
-    body {
-      background: radial-gradient(circle at 50% 0%, #0d1e3a 0%, #060b14 65%, #03060a 100%) !important;
-      color: #e2e8f0 !important;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-      min-height: 100vh !important;
-      overflow-x: hidden !important;
-    }
-
-    /* Remove footer copyright and ads */
-    footer,
-    .footer,
-    [class*="footer"],
-    #footer,
-    [id*="footer"],
-    .ready-to-earn {
-      display: none !important;
-    }
-
-    /* Refine task instructions card */
-    #advertise-html-wrapper,
-    .instruction-wrapper {
-      background: rgba(13, 25, 48, 0.72) !important;
-      backdrop-filter: blur(16px) !important;
-      -webkit-backdrop-filter: blur(16px) !important;
-      border: 1px solid rgba(56, 189, 248, 0.22) !important;
-      border-radius: 20px !important;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.08) !important;
-      padding: 24px !important;
-      max-width: 780px !important;
-      margin: 24px auto !important;
-      color: #e2e8f0 !important;
-    }
-
-    #advertise-html-wrapper h3,
-    #advertise-html-wrapper h4,
-    #advertise-html-wrapper .text-primary {
-      color: #38bdf8 !important;
-      font-weight: 800 !important;
-      letter-spacing: -0.02em !important;
-    }
-
-    /* Style the input form container */
-    form:has(input[name="code"]),
-    form:has(input#code),
-    .input-code-wrapper {
-      background: rgba(13, 25, 48, 0.85) !important;
-      backdrop-filter: blur(20px) !important;
-      border: 1px solid rgba(56, 189, 248, 0.3) !important;
-      border-radius: 20px !important;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
-      padding: 24px !important;
-      max-width: 600px !important;
-      margin: 20px auto !important;
-      text-align: center !important;
-    }
-
-    /* Modernize input code field */
-    input[name="code"],
-    input#code,
-    input[placeholder*="mã"],
-    input[placeholder*="code"] {
-      background: rgba(4, 9, 20, 0.75) !important;
-      border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
-      border-radius: 14px !important;
-      color: #38bdf8 !important;
-      font-family: 'JetBrains Mono', monospace !important;
-      font-size: 16px !important;
-      font-weight: 700 !important;
-      padding: 14px 18px !important;
-      text-align: center !important;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5) !important;
-      transition: all 0.25s ease !important;
-      width: 100% !important;
-      max-width: 420px !important;
-    }
-
-    input[name="code"]:focus,
-    input#code:focus {
-      outline: none !important;
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35) !important;
-    }
-
-    /* Style continue button */
-    button#btn-continue,
-    .btn-success {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-      border: none !important;
-      border-radius: 14px !important;
-      color: #ffffff !important;
-      font-weight: 800 !important;
-      padding: 14px 28px !important;
-      font-size: 15px !important;
-      letter-spacing: 0.02em !important;
-      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35) !important;
-      cursor: pointer !important;
-      transition: all 0.25s ease !important;
-    }
-
-    button#btn-continue:hover,
-    .btn-success:hover {
-      transform: translateY(-2px) !important;
-      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5) !important;
-    }
-
-    /* Clean branding banner injected on page header and footer */
-    .duy-page-header {
-      width: 100%;
-      padding: 30px 16px 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .duy-page-footer {
-      width: 100%;
-      padding: 40px 16px 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      margin-top: 60px;
-    }
-
-    .duy-footer-copy {
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
-      letter-spacing: 0.05em;
-    }
-  `;
 
   const STYLES = `
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -713,7 +576,7 @@
           <div class="brand-svg-wrap">
             ${SVG_LOGO_DAU}
           </div>
-          <span class="badge">v3.0 PEAK</span>
+          <span class="badge">v3.0</span>
           <button type="button" class="btn-min" id="btnMin" title="Thu nhỏ">−</button>
         </div>
 
@@ -764,81 +627,8 @@
     </div>
   `;
 
-  function injectGlobalStyles() {
-    const styleEl = document.createElement('style');
-    styleEl.id = 'bypass-l4m-global-styles';
-    styleEl.textContent = GLOBAL_CLEANER_STYLES;
-    (document.head || document.documentElement).appendChild(styleEl);
-  }
-
-  function cleanDomElements() {
-    try {
-      // 1. Remove ONLY video elements, do not remove parent cards/containers
-      for (const el of document.querySelectorAll('iframe[src*="youtube"], iframe[src*="youtu.be"]')) {
-        el.style.display = 'none';
-        if (el.parentElement && el.parentElement.children.length === 1) {
-          el.parentElement.style.display = 'none';
-        }
-      }
-
-      for (const h of document.querySelectorAll('h1, h2, h3, h4, h5, h6, p')) {
-        const txt = (h.textContent || '').trim();
-        if (/VIDEO HƯỚNG DẪN CÁCH LẤY MÃ/i.test(txt)) {
-          h.style.display = 'none';
-        }
-      }
-
-      // 2. Filter advertise-html-wrapper to retain ONLY Steps 1, 2, 3
-      const wrapper = document.getElementById('advertise-html-wrapper');
-      if (wrapper) {
-        wrapper.style.display = 'block';
-
-        // Hide notes
-        for (const el of wrapper.querySelectorAll('p, div, span')) {
-          const t = el.textContent || '';
-          if (/Lưu ý:\s*Vui lòng làm theo đúng hướng dẫn|Sử dụng trình duyệt Chrome|KHÔNG Click vào quảng cáo|KHÔNG dùng trình duyệt Ẩn danh/i.test(t)) {
-            el.style.display = 'none';
-          }
-          if (/Bước\s*[456]\s*[:.\-]/i.test(t)) {
-            el.style.display = 'none';
-          }
-        }
-      }
-
-      // 3. Hide Link4m footer ads and copyright
-      for (const el of document.querySelectorAll('footer, .footer, [class*="footer"], .ready-to-earn')) {
-        el.style.display = 'none';
-      }
-
-      // Custom footer
-      if (!document.getElementById('duy-custom-footer') && document.body) {
-        const footer = document.createElement('div');
-        footer.id = 'duy-custom-footer';
-        footer.className = 'duy-page-footer';
-        footer.innerHTML = `
-          ${SVG_LOGO_DUOI}
-          <div class="duy-footer-copy">© 2026 Link4M-BYPASS by @duydepzai - All Rights Reserved.</div>
-        `;
-        document.body.appendChild(footer);
-      }
-
-      // Custom header
-      if (!document.getElementById('duy-custom-header') && document.body) {
-        const header = document.createElement('div');
-        header.id = 'duy-custom-header';
-        header.className = 'duy-page-header';
-        header.innerHTML = SVG_LOGO_DAU;
-        document.body.prepend(header);
-      }
-    } catch (e) {
-      console.warn('[bypass-l4m] Clean DOM fault', e);
-    }
-  }
-
   function initUI() {
     if (state.ui.host || !document.body) return;
-    injectGlobalStyles();
-    cleanDomElements();
 
     const host = document.createElement('div');
     host.id = 'bypass-l4m-host';
@@ -879,7 +669,6 @@
     });
 
     setInterval(refreshClockDisplay, 200);
-    setInterval(cleanDomElements, 1000);
     refreshClockDisplay();
     refreshActionButtons();
   }
