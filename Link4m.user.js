@@ -68,7 +68,7 @@
   };
 
   const STYLES = `
-    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
     :host, :host * {
       box-sizing: border-box;
@@ -78,28 +78,30 @@
     }
 
     .root {
-      font-family: 'Fira Code', 'JetBrains Mono', monospace;
-      color: #1a1a1a;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
       font-size: 13px;
       line-height: 1.5;
     }
 
-    /* Terminal Card - Retro Cream Theme */
+    /* Modern Glass Card */
     .panel {
       position: fixed;
       right: 24px;
       bottom: 24px;
-      width: min(400px, calc(100vw - 32px));
+      width: min(390px, calc(100vw - 32px));
       max-height: calc(100dvh - 40px);
       overflow-y: auto;
-      border-radius: 12px;
-      border: 2px solid #1e2022;
-      background: #fdfbf7;
-      box-shadow: 6px 6px 0px #1e2022, 0 16px 36px rgba(0, 0, 0, 0.15);
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(226, 232, 240, 0.6);
       z-index: 2147483647;
       touch-action: none;
       scrollbar-width: thin;
-      scrollbar-color: #d1c7b7 transparent;
+      scrollbar-color: #cbd5e1 transparent;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -107,19 +109,21 @@
       width: 5px;
     }
     .panel::-webkit-scrollbar-thumb {
-      background: #d1c7b7;
+      background: #cbd5e1;
       border-radius: 10px;
     }
 
-    /* Mac / Unix Terminal Topbar */
+    /* Mac Terminal Topbar - Clean Light Theme */
     .terminal-header {
-      background: #1e2022;
-      padding: 10px 14px;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 11px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       cursor: move;
-      border-bottom: 2px solid #1e2022;
+      border-bottom: 1px solid #e2e8f0;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
     }
 
     .terminal-dots {
@@ -129,107 +133,119 @@
     }
 
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
       display: inline-block;
-      border: 1px solid rgba(0,0,0,0.15);
+      transition: transform 0.15s ease;
     }
-    .dot.red { background-color: #ff5f56; }
-    .dot.yellow { background-color: #ffbd2e; }
-    .dot.green { background-color: #27c93f; }
+    .dot:hover { transform: scale(1.15); }
+    .dot.red { background-color: #ff5f56; box-shadow: 0 0 6px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background-color: #ffbd2e; box-shadow: 0 0 6px rgba(255, 189, 46, 0.4); }
+    .dot.green { background-color: #27c93f; box-shadow: 0 0 6px rgba(39, 201, 63, 0.4); }
 
     .terminal-title {
       flex: 1;
       text-align: center;
-      font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
       font-weight: 700;
-      color: #e5e0d8;
-      letter-spacing: 0.06em;
+      color: #475569;
+      letter-spacing: 0.05em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-left: -12px;
+      margin-left: -14px;
     }
 
     .btn-min {
-      border: 1px solid #4a5056;
-      border-radius: 6px;
-      color: #cbd5e1;
-      background: #2b3036;
-      width: 24px;
-      height: 24px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      color: #64748b;
+      background: #ffffff;
+      width: 26px;
+      height: 26px;
       display: grid;
       place-items: center;
       font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: all 0.15s ease;
     }
 
     .btn-min:hover {
       background: #ff5f56;
-      color: #fff;
+      color: #ffffff;
       border-color: #ff5f56;
+      box-shadow: 0 2px 8px rgba(255, 95, 86, 0.35);
     }
 
-    /* Brand banner inside cream card */
+    /* Brand banner */
     .brand-section {
-      padding: 12px 16px 10px;
-      border-bottom: 2px solid #ece4d8;
-      background: #f7f2e8;
+      padding: 13px 18px 11px;
+      border-bottom: 1px solid #f1f5f9;
+      background: #ffffff;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
     .badge-ver {
-      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
       font-weight: 700;
-      color: #634d28;
-      background: #ece4d8;
-      border: 1px solid #d4c8b6;
-      padding: 2px 7px;
-      border-radius: 4px;
+      color: #0284c7;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      border: 1px solid #bae6fd;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
     }
 
-    /* Terminal Logs Box */
+    /* Terminal Console Box - Sleek Deep Navy */
     .terminal-logs {
-      background: #181a1b;
-      margin: 12px 14px 6px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #2d3135;
-      color: #a6e22e;
+      background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+      margin: 12px 16px 6px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11.5px;
       display: flex;
       align-items: center;
       gap: 9px;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(14, 165, 233, 0.08);
     }
 
     .terminal-prompt {
-      color: #00d2ff;
-      font-weight: 700;
+      color: #38bdf8;
+      font-weight: 800;
       flex-shrink: 0;
+      font-size: 12px;
     }
 
     .status-msg {
       flex: 1;
-      color: #f8f8f2;
+      color: #f8fafc;
       word-break: break-word;
       font-size: 11.5px;
       font-weight: 500;
+      line-height: 1.4;
     }
 
-    .status-msg.ok { color: #a6e22e; }
-    .status-msg.warn { color: #fd971f; }
-    .status-msg.err { color: #ff5555; }
-    .status-msg.info { color: #66d9ef; }
+    .status-msg.ok { color: #34d399; }
+    .status-msg.warn { color: #fbbf24; }
+    .status-msg.err { color: #f87171; }
+    .status-msg.info { color: #38bdf8; }
 
     .clock {
-      color: #fd971f;
-      background: rgba(253, 151, 31, 0.15);
-      padding: 2px 5px;
-      border-radius: 4px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 7px;
+      border-radius: 6px;
       font-weight: 700;
       font-size: 11px;
     }
@@ -238,7 +254,7 @@
       display: inline-block;
       width: 6px;
       height: 14px;
-      background: #66d9ef;
+      background: #38bdf8;
       vertical-align: middle;
       animation: blink 1s steps(1) infinite;
     }
@@ -247,8 +263,8 @@
     .spinner {
       width: 12px;
       height: 12px;
-      border: 2px solid #2d3135;
-      border-top-color: #66d9ef;
+      border: 2px solid rgba(56, 189, 248, 0.2);
+      border-top-color: #38bdf8;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       flex-shrink: 0;
@@ -258,29 +274,29 @@
 
     .progress-bar {
       height: 3px;
-      background: #e2d9cb;
-      margin: 0 14px;
-      border-radius: 2px;
+      background: #e2e8f0;
+      margin: 0 16px;
+      border-radius: 3px;
       overflow: hidden;
     }
 
     .progress-fill {
       height: 100%;
       width: 0%;
-      background: #1e2022;
+      background: linear-gradient(90deg, #0ea5e9, #10b981);
       transition: width 0.25s ease;
     }
 
     .banner {
       display: none;
-      margin: 10px 14px 0;
-      border-radius: 6px;
+      margin: 10px 16px 0;
+      border-radius: 10px;
       padding: 9px 12px;
       font-size: 11.5px;
-      font-weight: 700;
-      background: #fff3cd;
-      border: 1.5px solid #ffbd2e;
-      color: #856404;
+      font-weight: 600;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #b45309;
       align-items: center;
       gap: 8px;
     }
@@ -291,37 +307,38 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      padding: 12px 14px 14px;
+      padding: 12px 16px 14px;
     }
 
     .input-box {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #fff;
-      border: 2px solid #1e2022;
-      border-radius: 8px;
-      padding: 0 10px;
-      box-shadow: 2px 2px 0px #1e2022;
-      transition: all 0.15s ease;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 12px;
+      transition: all 0.2s ease;
     }
 
     .input-box:focus-within {
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0px #1e2022;
+      background: #ffffff;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
     }
 
     .input-prompt {
-      color: #78716c;
+      color: #0ea5e9;
+      font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .url-input {
       border: 0;
       background: transparent;
       padding: 10px 0;
-      color: #1e2022;
+      color: #0f172a;
       font-size: 12.5px;
       font-family: inherit;
       outline: 0;
@@ -329,30 +346,25 @@
       min-width: 0;
       user-select: text;
     }
-    .url-input::placeholder { color: #a8a29e; }
+    .url-input::placeholder { color: #94a3b8; }
     .url-input:disabled { opacity: 0.6; }
 
     button {
       font: inherit;
       cursor: pointer;
       outline: 0;
-      border: 2px solid #1e2022;
-      border-radius: 8px;
-      transition: all 0.15s ease;
-    }
-
-    button:active {
-      transform: translate(2px, 2px) !important;
-      box-shadow: 0px 0px 0px #1e2022 !important;
+      border: 0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn-main {
       padding: 11px;
-      background: #ffeb3b;
-      color: #1e2022;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      color: #ffffff;
       font-size: 13px;
-      font-weight: 800;
-      box-shadow: 3px 3px 0px #1e2022;
+      font-weight: 700;
+      box-shadow: 0 6px 18px -3px rgba(37, 99, 235, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -360,16 +372,21 @@
     }
 
     .btn-main:hover {
-      background: #ffee55;
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0px #1e2022;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -3px rgba(37, 99, 235, 0.55);
+      filter: brightness(1.05);
+    }
+
+    .btn-main:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.4);
     }
 
     .btn-main:disabled {
-      opacity: 0.5;
+      opacity: 0.6;
       cursor: not-allowed;
       transform: none !important;
-      box-shadow: 2px 2px 0px #1e2022 !important;
+      box-shadow: none !important;
     }
 
     .row-btns {
@@ -379,30 +396,39 @@
 
     .btn-sec {
       flex: 1;
-      padding: 8px 10px;
-      background: #f0e9dd;
-      color: #1e2022;
+      padding: 9px 12px;
+      border-radius: 10px;
       font-size: 12px;
       font-weight: 700;
-      box-shadow: 2px 2px 0px #1e2022;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
 
-    .btn-sec:hover {
-      background: #e8ded0;
-      transform: translate(-1px, -1px);
-      box-shadow: 3px 3px 0px #1e2022;
+    .btn-switch {
+      background: #f0f9ff;
+      color: #0284c7;
+      border: 1.5px solid #bae6fd;
+    }
+
+    .btn-switch:hover {
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
     }
 
     .btn-discord {
-      background: #e0e7ff;
-      color: #3730a3;
+      background: #5865F2;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(88, 101, 242, 0.3);
     }
+
     .btn-discord:hover {
-      background: #c7d2fe;
+      background: #4752c4;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(88, 101, 242, 0.4);
     }
 
     .discord-icon {
@@ -416,49 +442,49 @@
       align-items: center;
       gap: 8px;
       font-size: 11.5px;
-      color: #57534e;
+      color: #64748b;
       cursor: pointer;
       margin-top: 2px;
       font-weight: 600;
     }
 
     .pref-row input {
-      accent-color: #1e2022;
-      width: 14px;
-      height: 14px;
+      accent-color: #2563eb;
+      width: 15px;
+      height: 15px;
     }
 
-    /* Result Box in Retro Style */
+    /* Result Box */
     .result-panel {
       display: none;
-      margin: 0 14px 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #e8f5e9;
-      border: 2px solid #1e2022;
-      box-shadow: 3px 3px 0px #1e2022;
+      margin: 0 16px 14px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.1);
     }
     .result-panel.show { display: block; }
 
     .result-header {
       font-size: 11px;
       font-weight: 800;
-      color: #1b5e20;
+      color: #15803d;
       letter-spacing: 0.05em;
     }
 
     .result-content {
-      font-family: inherit;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      background: #fff;
-      border: 1px solid #1e2022;
-      border-radius: 6px;
-      padding: 7px;
-      margin: 6px 0;
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin: 7px 0;
       max-height: 70px;
       overflow-y: auto;
       word-break: break-all;
-      color: #1e2022;
+      color: #166534;
       user-select: text;
     }
 
@@ -469,32 +495,36 @@
 
     .btn-act {
       flex: 1;
-      padding: 7px;
-      font-weight: 800;
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: 700;
       font-size: 11.5px;
-      box-shadow: 2px 2px 0px #1e2022;
     }
 
     .btn-act.copy {
-      background: #a5d6a7;
-      color: #1e2022;
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
     }
+    .btn-act.copy:hover { filter: brightness(1.08); }
 
     .btn-act.open {
       background: #ffffff;
-      color: #1e2022;
+      color: #15803d;
+      border: 1.5px solid #86efac;
     }
+    .btn-act.open:hover { background: #f0fdf4; }
 
-    /* Bottom footer in vintage card */
+    /* Bottom footer */
     .panel-footer {
-      padding: 10px 14px 12px;
-      border-top: 2px solid #1e2022;
+      padding: 11px 16px 13px;
+      border-top: 1px solid #e2e8f0;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #1e2022;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
     }
 
     .fab-btn {
@@ -504,13 +534,13 @@
       bottom: 24px;
       width: 48px;
       height: 48px;
-      border-radius: 12px;
-      border: 2px solid #1e2022;
-      background: #ffeb3b;
-      color: #1e2022;
+      border-radius: 50%;
+      border: 0;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #ffffff;
       font-size: 20px;
       font-weight: 900;
-      box-shadow: 4px 4px 0px #1e2022;
+      box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.5);
       z-index: 2147483647;
       cursor: pointer;
       place-items: center;
@@ -518,8 +548,8 @@
     }
 
     .fab-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0px #1e2022;
+      transform: scale(1.08);
+      box-shadow: 0 14px 30px -4px rgba(37, 99, 235, 0.65);
     }
 
     .fab-btn.show { display: grid; }
@@ -563,41 +593,41 @@
       <path d="M118 12 L152 68 L152 104 L118 50 Z" fill="url(#pGradMShade)" />
     </svg>
     <div style="display:flex;flex-direction:column;margin-left:8px;line-height:1;">
-      <span style="font-weight:800;font-size:13px;letter-spacing:-0.02em;color:#1e2022;">Link4M-BYPASS</span>
-      <span style="font-size:9.5px;font-weight:700;color:#78716c;letter-spacing:0.04em;">by @duydepzai</span>
+      <span style="font-weight:800;font-size:13px;letter-spacing:-0.02em;color:#0f172a;">Link4M-BYPASS</span>
+      <span style="font-size:9.5px;font-weight:700;color:#64748b;letter-spacing:0.04em;">by @duydepzai</span>
     </div>
   `;
 
   const SVG_LOGO_DUOI = `
     <div style="display:inline-flex;align-items:baseline;line-height:1;user-select:none;">
-      <span style="color:#ffffff;font-weight:700;font-size:14px;letter-spacing:-0.04em;margin-right:2px;">Link</span>
+      <span style="color:#0f172a;font-weight:700;font-size:13.5px;letter-spacing:-0.04em;margin-right:2px;">Link</span>
       <svg viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:11px;width:auto;vertical-align:baseline;">
         <defs>
           <linearGradient id="pFold4" x1="22" y1="43" x2="37" y2="43" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#ffffff" />
-            <stop offset="100%" stop-color="#c4d3eb" />
+            <stop offset="0%" stop-color="#0284c7" />
+            <stop offset="100%" stop-color="#2563eb" />
           </linearGradient>
           <linearGradient id="pFoldMLeft" x1="47" y1="14" x2="66" y2="44" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#c6d5ec" />
-            <stop offset="48%" stop-color="#f2f6fc" />
-            <stop offset="100%" stop-color="#ffffff" />
+            <stop offset="0%" stop-color="#0ea5e9" />
+            <stop offset="48%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#1d4ed8" />
           </linearGradient>
           <linearGradient id="pFoldMRight" x1="87" y1="14" x2="68" y2="44" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#c9d7ee" />
-            <stop offset="52%" stop-color="#f4f7fc" />
-            <stop offset="100%" stop-color="#ffffff" />
+            <stop offset="0%" stop-color="#0284c7" />
+            <stop offset="52%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#1d4ed8" />
           </linearGradient>
         </defs>
-        <path d="M32 4 L2 39 L11 49 H56 V38 H17.5 L32 21 V4 Z" fill="#ffffff" />
-        <rect x="22" y="38" width="14" height="11" fill="url(#pFold4)" opacity="0.7" />
-        <rect x="36" y="38" width="12" height="26" fill="#ffffff" />
-        <rect x="36" y="0" width="12" height="34" fill="#ffffff" />
-        <rect x="86" y="0" width="12" height="64" fill="#ffffff" />
+        <path d="M32 4 L2 39 L11 49 H56 V38 H17.5 L32 21 V4 Z" fill="#0052ff" />
+        <rect x="22" y="38" width="14" height="11" fill="url(#pFold4)" opacity="0.8" />
+        <rect x="36" y="38" width="12" height="26" fill="#0052ff" />
+        <rect x="36" y="0" width="12" height="34" fill="#0052ff" />
+        <rect x="86" y="0" width="12" height="64" fill="#0052ff" />
         <path d="M47 0 L67 32 L67 49 L47 17 Z" fill="url(#pFoldMLeft)" />
         <path d="M87 0 L67 32 L67 49 L87 17 Z" fill="url(#pFoldMRight)" />
       </svg>
-      <span style="color:rgba(255,255,255,0.7);font-weight:700;margin:0 4px;font-size:12px;">-</span>
-      <span style="font-weight:800;font-size:13px;letter-spacing:-0.03em;background:linear-gradient(96deg,#ff7b9c 0%,#ffb366 22%,#ffe770 43%,#72f2c3 64%,#84d8ff 82%,#d8c2ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;">bypass</span>
+      <span style="color:#94a3b8;font-weight:700;margin:0 4px;font-size:12px;">-</span>
+      <span style="font-weight:800;font-size:13px;letter-spacing:-0.03em;background:linear-gradient(96deg,#ff4b72 0%,#ff8833 22%,#f59e0b 43%,#10b981 64%,#06b6d4 82%,#8b5cf6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;">bypass</span>
     </div>
   `;
 
