@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link4M - bypass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #0052ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Khung chuẩn 16:9 đồng màu nền xanh */
+    .stage-16-9 {
+      width: 100vw;
+      max-width: 1920px;
+      aspect-ratio: 16 / 9;
+      background-color: #0052ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4%;
+    }
+
+    .brand-lockup {
+      display: inline-flex;
+      align-items: baseline;
+      font-size: clamp(46px, 8.2vw, 148px);
+      line-height: 1;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* Chữ Link trắng sắc nét khớp logo gốc */
+    .text-link {
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      margin-right: 0.02em;
+    }
+
+    /* Biểu tượng 4M gấp giấy (Vector SVG căn chuẩn baseline & cap-height) */
+    .mark-4m {
+      height: 0.725em;
+      width: auto;
+      display: inline-block;
+      vertical-align: baseline;
+      flex-shrink: 0;
+    }
+
+    /* Dấu gạch nối tinh tế làm cầu nối giữa trắng và cầu vồng */
+    .separator {
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 700;
+      margin: 0 0.22em;
+      display: inline-block;
+      transform: translateY(-0.04em);
+    }
+
+    /* Chữ bypass cầu vồng chuẩn editorial (sạch, nổi trên nền xanh, không neon AI) */
+    .text-bypass {
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      /* Bỏ comment dòng dưới nếu muốn đổi thành chữ in hoa BYPASS */
+      /* text-transform: uppercase; */
+
+      background: linear-gradient(
+        96deg,
+        #ff7b9c 0%,
+        #ffb366 22%,
+        #ffe770 43%,
+        #72f2c3 64%,
+        #84d8ff 82%,
+        #d8c2ff 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+
+      /* Đổ bóng siêu mảnh tạo độ nổi tự nhiên trên nền xanh, không bị lem neon */
+      filter: drop-shadow(0 0.03em 0.07em rgba(0, 24, 92, 0.22));
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-16-9">
+    <div class="brand-lockup">
+      <span class="text-link">Link</span>
+
+      <!-- Icon 4M Vector chuẩn nếp gấp gốc -->
+      <svg class="mark-4m" viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="4M">
+        <defs>
+          <!-- Bóng gấp nhẹ tại giao điểm thanh ngang số 4 -->
+          <linearGradient id="fold4" x1="22" y1="43" x2="37" y2="43" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#c4d3eb" />
+          </linearGradient>
+
+          <!-- Bóng gấp nhẹ trên nhánh trái chữ M -->
+          <linearGradient id="foldMLeft" x1="47" y1="14" x2="66" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c6d5ec" />
+            <stop offset="48%" stop-color="#f2f6fc" />
+            <stop offset="100%" stop-color="#ffffff" />
+          </linearGradient>
+
+          <!-- Bóng gấp nhẹ trên nhánh phải chữ M -->
+          <linearGradient id="foldMRight" x1="87" y1="14" x2="68" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c9d7ee" />
+            <stop offset="52%" stop-color="#f4f7fc" />
+            <stop offset="100%" stop-color="#ffffff" />
+          </linearGradient>
+        </defs>
+
+        <!-- Số 4: nét chéo & thanh ngang -->
+        <path d="M32 4 L2 39 L11 49 H56 V38 H17.5 L32 21 V4 Z" fill="#ffffff" />
+        <!-- Lớp bóng gấp nhẹ trước trục đứng số 4 -->
+        <rect x="22" y="38" width="14" height="11" fill="url(#fold4)" opacity="0.7" />
+        <!-- Trục đứng phía dưới số 4 -->
+        <rect x="36" y="38" width="12" height="26" fill="#ffffff" />
+
+        <!-- Chữ M: trục trái trên (có khe hở tách số 4 chuẩn bản gốc) -->
+        <rect x="36" y="0" width="12" height="34" fill="#ffffff" />
+        <!-- Chữ M: trục phải dài hết chiều cao -->
+        <rect x="86" y="0" width="12" height="64" fill="#ffffff" />
+        <!-- Chữ M: 2 nhánh chéo tạo chữ V ở giữa -->
+        <path d="M47 0 L67 32 L67 49 L47 17 Z" fill="url(#foldMLeft)" />
+        <path d="M87 0 L67 32 L67 49 L87 17 Z" fill="url(#foldMRight)" />
+      </svg>
+
+      <span class="separator">-</span>
+      <span class="text-bypass">bypass</span>
+    </div>
+  </div>
+</body>
+</html>

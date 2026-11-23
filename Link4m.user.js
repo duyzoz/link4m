@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         bypass l4m by duydepzai
 // @namespace    local.duydepzai.l4m
-// @version      2.1.0
-// @description  Automated Link4m flow and widget resolver
+// @version      3.0.0
+// @description  Automated Link4m flow, smart DOM refactor, and widget resolver
 // @author       duydepzai
 // @match        *://link4m.app/*
 // @match        *://*.link4m.app/*
@@ -12,8 +12,7 @@
 // @match        *://*.link4m.net/*
 // @match        *://link4m.org/*
 // @match        *://*.link4m.org/*
-// @run-at       document-idle
-// @noframes
+// @run-at       document-start
 // @grant        GM_xmlhttpRequest
 // @grant        GM.xmlHttpRequest
 // @grant        GM_getValue
@@ -41,7 +40,6 @@
     ocrSpaceApiKeys: ['helloworld', 'K88289434888957', 'K87569947288957'],
     ocrSpaceEndpoint: 'https://api.ocr.space/parse/image',
     tesseractCdn: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-    storeUrl: 'https://robuxvien.com/home',
     communityUrl: 'https://discord.gg/rcRBbzTfqB'
   });
 
@@ -58,7 +56,7 @@
     panelOpen: true,
     currentUrl: location.href,
     isGoogleInstruction: false,
-    status: 'Initializing...',
+    status: 'Đang khởi tạo hệ thống...',
     statusTone: 'info',
     spinning: true,
     targetDeadline: 0,
@@ -66,114 +64,791 @@
     stepLabel: '',
     finalUrl: '',
     autoRedirect: true,
-    cachedTesseractLoader: null,
-    dragOffset: { x: 0, y: 0 }
+    cachedTesseractLoader: null
   };
 
+  const GLOBAL_CLEANER_STYLES = `
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #0d1e3a 0%, #060b14 65%, #03060a 100%) !important;
+      color: #e2e8f0 !important;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+      min-height: 100vh !important;
+      overflow-x: hidden !important;
+    }
+
+    /* Clean elements per specifications */
+    footer,
+    .footer,
+    [class*="footer"],
+    #footer,
+    [id*="footer"],
+    .container-fluid:has(footer),
+    div:has(> a[href*="link4m.com"]),
+    div:has(> p:contains("Copyrights")),
+    iframe[src*="youtube"],
+    iframe[src*="youtu.be"],
+    div:has(> iframe[src*="youtube"]),
+    div:has(> iframe[src*="youtu.be"]),
+    div:has(> h4:contains("Video hướng dẫn")),
+    div:has(> h3:contains("Video hướng dẫn")),
+    div:has(> p:contains("Video hướng dẫn")),
+    .video-guide,
+    #video-guide,
+    .section-video,
+    div:has(> a[href*="register"]),
+    div:has(> a[href*="login"]),
+    .ready-to-earn,
+    section:has(h2:contains("KIẾM TIỀN")),
+    div:has(> h2:contains("SẴN SÀNG ĐỂ KIẾM TIỀN")),
+    div:has(> h3:contains("SẴN SÀNG ĐỂ KIẾM TIỀN")),
+    div:has(> p:contains("Rút gọn link kiếm tiền")) {
+      display: none !important;
+    }
+
+    /* Refine task instructions card */
+    #advertise-html-wrapper,
+    .instruction-wrapper,
+    .card:has(#advertise-html-wrapper) {
+      background: rgba(13, 25, 48, 0.72) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(56, 189, 248, 0.22) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.08) !important;
+      padding: 24px !important;
+      max-width: 780px !important;
+      margin: 24px auto !important;
+      color: #e2e8f0 !important;
+    }
+
+    #advertise-html-wrapper h3,
+    #advertise-html-wrapper h4,
+    #advertise-html-wrapper .text-primary {
+      color: #38bdf8 !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.02em !important;
+    }
+
+    /* Style the input form container */
+    form:has(input[name="code"]),
+    form:has(input#code),
+    .input-code-wrapper,
+    div:has(> input[name="code"]),
+    div:has(> input#code) {
+      background: rgba(13, 25, 48, 0.85) !important;
+      backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+      padding: 24px !important;
+      max-width: 600px !important;
+      margin: 20px auto !important;
+      text-align: center !important;
+    }
+
+    /* Modernize input code field */
+    input[name="code"],
+    input#code,
+    input[placeholder*="mã"],
+    input[placeholder*="code"] {
+      background: rgba(4, 9, 20, 0.75) !important;
+      border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 14px !important;
+      color: #38bdf8 !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      padding: 14px 18px !important;
+      text-align: center !important;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+      transition: all 0.25s ease !important;
+      width: 100% !important;
+      max-width: 420px !important;
+    }
+
+    input[name="code"]:focus,
+    input#code:focus {
+      outline: none !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35) !important;
+    }
+
+    /* Style continue button */
+    button#btn-continue,
+    button:has(span:contains("Click vào đây để tiếp tục")),
+    button:contains("Click vào đây để tiếp tục"),
+    a:contains("Click vào đây để tiếp tục"),
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      border: none !important;
+      border-radius: 14px !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      padding: 14px 28px !important;
+      font-size: 15px !important;
+      letter-spacing: 0.02em !important;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35) !important;
+      cursor: pointer !important;
+      transition: all 0.25s ease !important;
+    }
+
+    button#btn-continue:hover,
+    .btn-success:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5) !important;
+    }
+
+    /* Clean branding banner injected on page header and footer */
+    .duy-page-header {
+      width: 100%;
+      padding: 30px 16px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .duy-page-footer {
+      width: 100%;
+      padding: 40px 16px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 60px;
+    }
+
+    .duy-footer-copy {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.05em;
+    }
+  `;
+
   const STYLES = `
-    :host, :host * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    .root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color: #e9f4fa; font-size: 13px; line-height: 1.4; }
-    .panel { position: fixed; right: 16px; bottom: 16px; width: min(380px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 18px; border: 1px solid #3d6a80; background: linear-gradient(165deg, #101c26 0%, #060a0f 100%); box-shadow: 0 16px 40px rgba(0,0,0,0.65), 0 0 24px rgba(79, 184, 232, 0.15); z-index: 2147483647; touch-action: none; }
-    .head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); cursor: move; }
-    .title { flex: 1; font-size: 14px; font-weight: 800; letter-spacing: 0.3px; color: #f0f7fb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .badge { font-family: monospace; font-size: 10px; font-weight: 700; color: #7de0ff; background: rgba(79,184,232,0.18); border: 1px solid rgba(79,184,232,0.4); padding: 3px 6px; border-radius: 6px; }
-    button { font: inherit; cursor: pointer; outline: 0; }
-    .btn-min { border: 0; border-radius: 8px; color: #a4c2d1; background: rgba(255,255,255,0.08); width: 28px; height: 28px; display: grid; place-items: center; font-size: 18px; }
-    .btn-min:hover { background: rgba(255,255,255,0.14); color: #fff; }
-    .status-bar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; font-weight: 600; min-height: 48px; }
-    .status-bar.info { color: #bee3f5; }
-    .status-bar.ok { color: #8ee2b5; }
-    .status-bar.warn { color: #f5cf89; }
-    .status-bar.err { color: #ff9890; }
-    .spinner { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); border-top-color: #6fe1ff; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    :host, :host * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    .root {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #f1f5f9;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .panel {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: min(390px, calc(100vw - 32px));
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      border-radius: 24px;
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(3, 7, 18, 0.98) 100%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(56, 189, 248, 0.16);
+      z-index: 2147483647;
+      touch-action: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+
+    .panel::-webkit-scrollbar {
+      width: 5px;
+    }
+    .panel::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: move;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .brand-svg-wrap {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .brand-svg-wrap svg {
+      height: 28px;
+      width: auto;
+      max-width: 100%;
+    }
+
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      outline: 0;
+      border: 0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-min {
+      border-radius: 9px;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .btn-min:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 13px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12.5px;
+      font-weight: 600;
+      min-height: 50px;
+    }
+
+    .status-bar.info { color: #bae6fd; }
+    .status-bar.ok { color: #6ee7b7; }
+    .status-bar.warn { color: #fde047; }
+    .status-bar.err { color: #fca5a5; }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #38bdf8;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
     .spinner.off { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .msg { flex: 1; word-break: break-word; }
-    .clock { font-family: monospace; font-weight: 700; font-size: 12px; color: #7de0ff; }
-    .progress-bar { height: 3px; background: rgba(255,255,255,0.08); position: relative; }
-    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4fb8e8, #88e8ff); transition: width 0.25s linear; }
-    .banner { display: none; margin: 10px 14px 0; border-radius: 10px; padding: 10px 12px; font-size: 12px; font-weight: 700; background: rgba(235, 178, 64, 0.16); border: 1px solid rgba(235, 178, 64, 0.45); color: #ffe6aa; align-items: center; gap: 8px; }
+
+    .msg {
+      flex: 1;
+      word-break: break-word;
+      letter-spacing: 0.01em;
+    }
+
+    .clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 12px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      transition: width 0.25s linear;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .banner {
+      display: none;
+      margin: 12px 18px 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(234, 179, 8, 0.14);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      color: #fef08a;
+      align-items: center;
+      gap: 9px;
+    }
+
     .banner.show { display: flex; }
-    .form-wrap { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; }
-    .input-box { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0 12px; }
-    .input-box:focus-within { border-color: #55caee; }
-    .url-input { border: 0; background: transparent; padding: 11px 0; color: #fff; font-size: 13px; outline: 0; flex: 1; min-width: 0; user-select: text; }
-    .url-input::placeholder { color: #6e8494; }
+
+    .form-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 18px;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(2, 6, 23, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 0 14px;
+      transition: all 0.25s ease;
+    }
+
+    .input-box:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+    }
+
+    .url-input {
+      border: 0;
+      background: transparent;
+      padding: 12px 0;
+      color: #f8fafc;
+      font-size: 13px;
+      outline: 0;
+      flex: 1;
+      min-width: 0;
+      user-select: text;
+    }
+
+    .url-input::placeholder { color: #64748b; }
     .url-input:disabled { opacity: 0.6; }
-    .btn-main { border: 0; border-radius: 11px; padding: 11px; background: linear-gradient(135deg, #75dcfa, #3aaad6); color: #05141e; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-main:hover { filter: brightness(1.08); }
-    .btn-main:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
-    .row-btns { display: flex; gap: 8px; }
-    .btn-sec { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(115, 195, 230, 0.28); background: rgba(79, 184, 232, 0.12); color: #d4f2ff; font-size: 12.5px; font-weight: 700; }
-    .btn-sec:hover { background: rgba(79, 184, 232, 0.2); }
-    .btn-sec.alt { border-color: rgba(144, 164, 255, 0.35); background: rgba(114, 137, 218, 0.14); color: #dde3ff; }
-    .btn-sec.alt:hover { background: rgba(114, 137, 218, 0.22); }
-    .btn-switch { border-color: rgba(247, 185, 85, 0.4); background: rgba(247, 185, 85, 0.12); color: #ffe6aa; font-weight: 800; }
-    .btn-switch:hover { background: rgba(247, 185, 85, 0.22); }
-    .pref-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #9bb7c7; cursor: pointer; margin-top: 2px; }
-    .pref-row input { accent-color: #55caee; }
-    .result-panel { display: none; margin: 0 14px 12px; padding: 10px; border-radius: 12px; background: rgba(46, 125, 85, 0.2); border: 1px solid rgba(88, 196, 138, 0.4); }
+
+    .btn-main {
+      border-radius: 13px;
+      padding: 12px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: #030712;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-main:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.45);
+    }
+
+    .btn-main:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: none;
+      transform: none;
+    }
+
+    .row-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-sec {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: rgba(56, 189, 248, 0.1);
+      color: #e0f2fe;
+      font-size: 12.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .btn-sec:hover {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .btn-switch {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.14);
+      color: #fef3c7;
+    }
+
+    .btn-switch:hover {
+      background: rgba(245, 158, 11, 0.24);
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    .btn-discord {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(99, 102, 241, 0.14);
+      color: #e0e7ff;
+    }
+
+    .btn-discord:hover {
+      background: rgba(99, 102, 241, 0.24);
+      border-color: rgba(99, 102, 241, 0.6);
+    }
+
+    .discord-icon {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .pref-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 11.5px;
+      color: #94a3b8;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .pref-row input {
+      accent-color: #38bdf8;
+      width: 14px;
+      height: 14px;
+    }
+
+    .result-panel {
+      display: none;
+      margin: 0 18px 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
     .result-panel.show { display: block; }
-    .result-header { font-size: 11px; font-weight: 800; letter-spacing: 0.8px; color: #8ae4af; }
-    .result-content { font-family: monospace; font-size: 11.5px; background: rgba(0,0,0,0.35); border-radius: 8px; padding: 8px; margin: 6px 0; max-height: 75px; overflow-y: auto; word-break: break-all; color: #dcf7e7; user-select: text; }
-    .result-actions { display: flex; gap: 8px; }
-    .btn-act { flex: 1; padding: 9px; border: 0; border-radius: 8px; font-weight: 800; font-size: 12px; }
-    .btn-act.copy { background: #5ec790; color: #071e12; }
-    .btn-act.open { background: rgba(88, 196, 138, 0.25); color: #d4f7e2; border: 1px solid rgba(88, 196, 138, 0.5); }
-    .fab-btn { display: none; position: fixed; right: 16px; bottom: 16px; width: 50px; height: 50px; border-radius: 16px; border: 1px solid rgba(115, 203, 235, 0.4); background: linear-gradient(145deg, #12222e, #091118); color: #8de3ff; font-size: 20px; font-weight: 900; box-shadow: 0 10px 28px rgba(0,0,0,0.6); z-index: 2147483647; cursor: pointer; place-items: center; }
+
+    .result-header {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #6ee7b7;
+    }
+
+    .result-content {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: rgba(2, 6, 23, 0.5);
+      border-radius: 9px;
+      padding: 9px;
+      margin: 8px 0;
+      max-height: 80px;
+      overflow-y: auto;
+      word-break: break-all;
+      color: #a7f3d0;
+      user-select: text;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-act {
+      flex: 1;
+      padding: 9px;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .btn-act.copy {
+      background: #10b981;
+      color: #022c22;
+    }
+
+    .btn-act.copy:hover { filter: brightness(1.1); }
+
+    .btn-act.open {
+      background: rgba(16, 185, 129, 0.2);
+      color: #d1fae5;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-act.open:hover { background: rgba(16, 185, 129, 0.3); }
+
+    .panel-footer-logo {
+      padding: 10px 18px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .panel-footer-logo:hover {
+      opacity: 1;
+    }
+
+    .panel-footer-logo svg {
+      height: 22px;
+      width: auto;
+      max-width: 100%;
+    }
+
+    .fab-btn {
+      display: none;
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: linear-gradient(145deg, #0f172a, #030712);
+      color: #38bdf8;
+      font-size: 22px;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.25);
+      z-index: 2147483647;
+      cursor: pointer;
+      place-items: center;
+      transition: all 0.25s ease;
+    }
+
+    .fab-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+
     .fab-btn.show { display: grid; }
-    @media (max-width: 480px) { .panel { width: calc(100vw - 20px); right: 10px; bottom: 10px; } }
+
+    @media (max-width: 480px) {
+      .panel {
+        width: calc(100vw - 24px);
+        right: 12px;
+        bottom: 12px;
+      }
+    }
+  `;
+
+  const SVG_LOGO_DAU = `
+    <svg viewBox="0 0 210 130" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:26px;width:auto;">
+      <defs>
+        <linearGradient id="pGradL" x1="10" y1="10" x2="65" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#38BDF8" />
+          <stop offset="55%" stop-color="#0EA5E9" />
+          <stop offset="100%" stop-color="#2563EB" />
+        </linearGradient>
+        <linearGradient id="pGrad4" x1="35" y1="75" x2="115" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0EA5E9" />
+          <stop offset="45%" stop-color="#10B981" />
+          <stop offset="100%" stop-color="#059669" />
+        </linearGradient>
+        <linearGradient id="pGradM" x1="100" y1="10" x2="195" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#34D399" />
+          <stop offset="50%" stop-color="#10B981" />
+          <stop offset="100%" stop-color="#047857" />
+        </linearGradient>
+        <linearGradient id="pGradMShade" x1="120" y1="10" x2="165" y2="95" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#059669" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="#047857" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M12 12 H34 V98 H78 V120 H12 V12 Z" fill="url(#pGradL)" />
+      <path d="M98 12 L42 74 L42 92 H122 V72 H72 L98 42 V12 Z" fill="url(#pGrad4)" />
+      <rect x="94" y="64" width="22" height="56" fill="url(#pGrad4)" />
+      <path d="M94 12 H118 L152 68 L186 12 H208 V120 H186 V50 L152 104 L118 50 V120 H94 V12 Z" fill="url(#pGradM)" />
+      <path d="M118 12 L152 68 L152 104 L118 50 Z" fill="url(#pGradMShade)" />
+    </svg>
+    <div style="display:flex;flex-direction:column;margin-left:8px;line-height:1;">
+      <span style="font-weight:800;font-size:13px;letter-spacing:-0.02em;color:#f8fafc;">Link4M-BYPASS</span>
+      <span style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:0.04em;">by @duydepzai</span>
+    </div>
+  `;
+
+  const SVG_LOGO_DUOI = `
+    <div style="display:inline-flex;align-items:baseline;line-height:1;user-select:none;">
+      <span style="color:#ffffff;font-weight:700;font-size:14px;letter-spacing:-0.04em;margin-right:2px;">Link</span>
+      <svg viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:10px;width:auto;vertical-align:baseline;">
+        <defs>
+          <linearGradient id="pFold4" x1="22" y1="43" x2="37" y2="43" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#c4d3eb" />
+          </linearGradient>
+          <linearGradient id="pFoldMLeft" x1="47" y1="14" x2="66" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c6d5ec" />
+            <stop offset="48%" stop-color="#f2f6fc" />
+            <stop offset="100%" stop-color="#ffffff" />
+          </linearGradient>
+          <linearGradient id="pFoldMRight" x1="87" y1="14" x2="68" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c9d7ee" />
+            <stop offset="52%" stop-color="#f4f7fc" />
+            <stop offset="100%" stop-color="#ffffff" />
+          </linearGradient>
+        </defs>
+        <path d="M32 4 L2 39 L11 49 H56 V38 H17.5 L32 21 V4 Z" fill="#ffffff" />
+        <rect x="22" y="38" width="14" height="11" fill="url(#pFold4)" opacity="0.7" />
+        <rect x="36" y="38" width="12" height="26" fill="#ffffff" />
+        <rect x="36" y="0" width="12" height="34" fill="#ffffff" />
+        <rect x="86" y="0" width="12" height="64" fill="#ffffff" />
+        <path d="M47 0 L67 32 L67 49 L47 17 Z" fill="url(#pFoldMLeft)" />
+        <path d="M87 0 L67 32 L67 49 L87 17 Z" fill="url(#pFoldMRight)" />
+      </svg>
+      <span style="color:rgba(255,255,255,0.7);font-weight:700;margin:0 4px;font-size:12px;">-</span>
+      <span style="font-weight:800;font-size:13px;letter-spacing:-0.03em;background:linear-gradient(96deg,#ff7b9c 0%,#ffb366 22%,#ffe770 43%,#72f2c3 64%,#84d8ff 82%,#d8c2ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;">bypass</span>
+    </div>
+  `;
+
+  const DISCORD_ICON = `
+    <svg class="discord-icon" viewBox="0 0 127.14 96.36">
+      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.86,53,48.81,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+    </svg>
   `;
 
   const MARKUP = `
     <div class="root">
       <div class="panel" id="panel">
         <div class="head" id="dragHead">
-          <strong class="title">bypass l4m by duydepzai</strong>
-          <span class="badge">v2.1</span>
-          <button type="button" class="btn-min" id="btnMin" title="Minimize">−</button>
+          <div class="brand-svg-wrap">
+            ${SVG_LOGO_DAU}
+          </div>
+          <span class="badge">v3.0 PEAK</span>
+          <button type="button" class="btn-min" id="btnMin" title="Thu nhỏ">−</button>
         </div>
+
         <div class="status-bar info" id="statusBar">
           <span class="spinner" id="spinner"></span>
-          <span class="msg" id="statusMsg">Initializing...</span>
+          <span class="msg" id="statusMsg">Đang khởi tạo hệ thống...</span>
           <span class="clock" id="statusClock"></span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
         <div class="banner" id="captchaBanner">
           <span>⚠️</span>
-          <span>Please complete the reCAPTCHA checkbox below.</span>
+          <span>Vui lòng giải reCAPTCHA trên trang để tiếp tục.</span>
         </div>
+
         <form class="form-wrap" id="mainForm" novalidate>
           <div class="input-box">
             <span>🔗</span>
-            <input class="url-input" id="taskInput" type="text" inputmode="url" placeholder="Task URL (e.g. gavangtv33.cc)" />
+            <input class="url-input" id="taskInput" type="text" inputmode="url" placeholder="URL nhiệm vụ (vd: example.com)" />
           </div>
-          <button type="submit" class="btn-main" id="btnStart">Execute</button>
+          <button type="submit" class="btn-main" id="btnStart">⚡ Bắt đầu Bypass</button>
           <div class="row-btns">
-            <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Switch Task</button>
-            <button type="button" class="btn-sec" id="btnStore">Store</button>
-            <button type="button" class="btn-sec alt" id="btnServer">Server</button>
+            <button type="button" class="btn-sec btn-switch" id="btnSwitch">🔀 Đổi nhiệm vụ</button>
+            <button type="button" class="btn-sec btn-discord" id="btnDiscord">
+              ${DISCORD_ICON} Discord
+            </button>
           </div>
           <label class="pref-row">
             <input type="checkbox" id="chkRedirect" checked />
-            Auto-open target link when finished
+            Tự động mở link đích khi hoàn tất
           </label>
         </form>
+
         <div class="result-panel" id="resultPanel">
-          <div class="result-header">✓ TARGET RESOLVED</div>
+          <div class="result-header">✓ ĐÃ LẤY ĐƯỢC LINK ĐÍCH</div>
           <div class="result-content" id="resultUrl"></div>
           <div class="result-actions">
-            <button type="button" class="btn-act copy" id="btnCopy">Copy</button>
-            <button type="button" class="btn-act open" id="btnOpen">Open Link</button>
+            <button type="button" class="btn-act copy" id="btnCopy">Sao chép</button>
+            <button type="button" class="btn-act open" id="btnOpen">Mở Link</button>
           </div>
         </div>
+
+        <div class="panel-footer-logo">
+          ${SVG_LOGO_DUOI}
+        </div>
       </div>
-      <button type="button" class="fab-btn" id="fabBtn" title="Open Menu">⚡</button>
+      <button type="button" class="fab-btn" id="fabBtn" title="Mở menu">⚡</button>
     </div>
   `;
 
+  function injectGlobalStyles() {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'bypass-l4m-global-styles';
+    styleEl.textContent = GLOBAL_CLEANER_STYLES;
+    (document.head || document.documentElement).appendChild(styleEl);
+  }
+
+  function cleanDomElements() {
+    try {
+      // 1. Remove unwanted notes and specific step texts (steps 4, 5, 6)
+      const wrapper = document.getElementById('advertise-html-wrapper');
+      if (wrapper) {
+        // Remove notes
+        const paras = wrapper.querySelectorAll('p, div, span');
+        for (const el of paras) {
+          const t = el.textContent || '';
+          if (/Lưu ý:\s*Vui lòng làm theo đúng hướng dẫn|Sử dụng trình duyệt Chrome|KHÔNG Click vào quảng cáo|KHÔNG dùng trình duyệt Ẩn danh/i.test(t)) {
+            el.remove();
+          }
+          if (/Bước\s*[456]\s*[:.\-]/i.test(t)) {
+            el.remove();
+          }
+        }
+      }
+
+      // 2. Remove footer copyright and replace with customized branding
+      for (const el of document.querySelectorAll('footer, [class*="footer"], div:has(> a[href*="link4m.com"])')) {
+        el.remove();
+      }
+
+      // Check if our custom footer already exists
+      if (!document.getElementById('duy-custom-footer')) {
+        const footer = document.createElement('div');
+        footer.id = 'duy-custom-footer';
+        footer.className = 'duy-page-footer';
+        footer.innerHTML = `
+          ${SVG_LOGO_DUOI}
+          <div class="duy-footer-copy">© 2026 Link4M-BYPASS by @duydepzai - All Rights Reserved.</div>
+        `;
+        document.body?.appendChild(footer);
+      }
+
+      // Inject custom header banner if not present
+      if (!document.getElementById('duy-custom-header') && document.body) {
+        const header = document.createElement('div');
+        header.id = 'duy-custom-header';
+        header.className = 'duy-page-header';
+        header.innerHTML = SVG_LOGO_DAU;
+        document.body.prepend(header);
+      }
+    } catch (e) {
+      console.warn('[bypass-l4m] Clean DOM fault', e);
+    }
+  }
+
   function initUI() {
     if (state.ui.host || !document.body) return;
+    injectGlobalStyles();
+    cleanDomElements();
+
     const host = document.createElement('div');
     host.id = 'bypass-l4m-host';
     const shadowRoot = host.attachShadow({ mode: 'open' });
@@ -193,7 +868,7 @@
       statusBar: q('statusBar'), statusMsg: q('statusMsg'), statusClock: q('statusClock'),
       spinner: q('spinner'), progressFill: q('progressFill'), captchaBanner: q('captchaBanner'),
       mainForm: q('mainForm'), taskInput: q('taskInput'), btnStart: q('btnStart'),
-      btnSwitch: q('btnSwitch'), btnStore: q('btnStore'), btnServer: q('btnServer'), chkRedirect: q('chkRedirect'),
+      btnSwitch: q('btnSwitch'), btnDiscord: q('btnDiscord'), chkRedirect: q('chkRedirect'),
       resultPanel: q('resultPanel'), resultUrl: q('resultUrl'), btnCopy: q('btnCopy'),
       btnOpen: q('btnOpen'), fabBtn: q('fabBtn')
     };
@@ -202,8 +877,7 @@
     q('btnMin').addEventListener('click', () => setDisplayMode(false));
     q('fabBtn').addEventListener('click', () => setDisplayMode(true));
     q('btnSwitch').addEventListener('click', forceSwitchCampaign);
-    q('btnStore').addEventListener('click', () => openUrl(CONFIG.storeUrl));
-    q('btnServer').addEventListener('click', () => openUrl(CONFIG.communityUrl));
+    q('btnDiscord').addEventListener('click', () => openUrl(CONFIG.communityUrl));
     q('btnCopy').addEventListener('click', copyTargetUrl);
     q('btnOpen').addEventListener('click', () => state.finalUrl && openUrl(state.finalUrl));
     q('chkRedirect').addEventListener('change', (e) => { state.autoRedirect = e.target.checked; });
@@ -214,6 +888,7 @@
     });
 
     setInterval(refreshClockDisplay, 200);
+    setInterval(cleanDomElements, 1000);
     refreshClockDisplay();
     refreshActionButtons();
   }
@@ -306,7 +981,7 @@
     state.ui.btnStart.disabled = isLocked;
     state.ui.taskInput.disabled = isLocked;
     if (state.ui.btnSwitch) state.ui.btnSwitch.disabled = isLocked;
-    state.ui.btnStart.textContent = state.busy ? 'Working...' : state.autoDetecting ? 'OCR Scanning...' : 'Execute';
+    state.ui.btnStart.textContent = state.busy ? 'Đang xử lý...' : state.autoDetecting ? 'Đang quét OCR...' : '⚡ Bắt đầu Bypass';
   }
 
   async function forceSwitchCampaign(e) {
@@ -316,12 +991,17 @@
       e.stopImmediatePropagation();
     }
     try {
-      updateStatus('Resetting campaign session...', { tone: 'warn', spin: true });
+      updateStatus('Đang làm mới nhiệm vụ & xóa session...', { tone: 'warn', spin: true });
       if (state.ui.btnSwitch) {
         state.ui.btnSwitch.disabled = true;
-        state.ui.btnSwitch.textContent = 'Resetting...';
+        state.ui.btnSwitch.textContent = 'Đang đổi...';
       }
 
+      // 1. Wipe all local and session storages
+      try { localStorage.clear(); } catch {}
+      try { sessionStorage.clear(); } catch {}
+
+      // 2. Clear client cookies across all root domain variations
       try {
         const cookies = document.cookie.split(';');
         for (const cookie of cookies) {
@@ -337,39 +1017,60 @@
         }
       } catch {}
 
-      try { localStorage.clear(); } catch {}
-      try { sessionStorage.clear(); } catch {}
-
+      // 3. Generate fresh randomized Client ID and spoofed fingerprinters
+      const freshCid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
       try {
         if (typeof GM_setValue === 'function') {
-          const newCid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-          GM_setValue('_l4m_cid_default', newCid);
-          GM_setValue('_traffic_cid_default', newCid);
+          GM_setValue('_l4m_cid_default', freshCid);
+          GM_setValue('_traffic_cid_default', freshCid);
         }
       } catch {}
 
+      // 4. Send background abort/reset signals to the server endpoints
       const host = detectBackendHost();
       const alias = readInputVal('alias');
+      const campaignId = readInputVal('campaign_id');
+      const displayId = readInputVal('display_id');
+
       if (alias) {
-        void httpRequest(`${host}/links/reset-session`, {
-          method: 'POST',
-          headers: getFormHeaders(location.href),
-          body: serializeParams({ alias, refresh: '1', ts: Date.now() }),
-          timeoutMs: 3000
-        }).catch(() => {});
+        const resetPayload = serializeParams({
+          alias,
+          campaign_id: campaignId || '',
+          display_id: displayId || '',
+          refresh: '1',
+          action: 'switch_campaign',
+          ts: Date.now()
+        });
+
+        await Promise.allSettled([
+          httpRequest(`${host}/links/reset-session`, {
+            method: 'POST',
+            headers: getFormHeaders(location.href),
+            body: resetPayload,
+            timeoutMs: 3000
+          }),
+          httpRequest(`${location.origin}/links/reset`, {
+            method: 'POST',
+            headers: getFormHeaders(location.href),
+            body: resetPayload,
+            timeoutMs: 3000
+          })
+        ]);
       }
 
-      updateStatus('Reloading new task...', { tone: 'info', spin: true });
-      await sleep(300);
+      updateStatus('Đang tải trang nhiệm vụ mới...', { tone: 'info', spin: true });
+      await sleep(350);
 
-      const u = new URL(location.href);
-      u.searchParams.delete('token');
-      u.searchParams.delete('uuid');
-      u.searchParams.set('_r', String(Date.now()));
+      // 5. Navigate with anti-cache timestamp and clear token parameters
+      const cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete('token');
+      cleanUrl.searchParams.delete('uuid');
+      cleanUrl.searchParams.set('_l4m_switch', String(Date.now()));
+      cleanUrl.searchParams.set('reload', 'true');
 
-      window.location.href = u.href;
+      window.location.replace(cleanUrl.href);
     } catch (err) {
-      console.error('[bypass-l4m] Switch fault', err);
+      console.error('[bypass-l4m] Switch error', err);
       window.location.reload();
     }
   }
@@ -379,7 +1080,7 @@
     state.ui.resultUrl.textContent = url;
     state.ui.resultPanel.classList.add('show');
     state.ui.progressFill.style.width = '100%';
-    updateStatus('✓ Target URL successfully obtained', { tone: 'ok', spin: false });
+    updateStatus('✓ Lấy URL thành công!', { tone: 'ok', spin: false });
     if (state.autoRedirect) {
       setTimeout(() => openUrl(url), 900);
     }
@@ -398,10 +1099,10 @@
       } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(state.finalUrl);
       }
-      state.ui.btnCopy.textContent = 'Copied!';
-      setTimeout(() => { if (state.ui.btnCopy) state.ui.btnCopy.textContent = 'Copy'; }, 2000);
+      state.ui.btnCopy.textContent = 'Đã chép!';
+      setTimeout(() => { if (state.ui.btnCopy) state.ui.btnCopy.textContent = 'Sao chép'; }, 2000);
     } catch {
-      updateStatus('Clipboard copy failed', { tone: 'warn' });
+      updateStatus('Không thể sao chép URL', { tone: 'warn' });
     }
   }
 
@@ -441,9 +1142,9 @@
               response: res.response,
               finalUrl: res.finalUrl || res.responseURL || url
             }),
-            onerror: (err) => finalize(reject, new Error(err?.error || err?.statusText || 'Network fault')),
-            ontimeout: () => finalize(reject, new Error('HTTP request timeout')),
-            onabort: () => finalize(reject, new Error('Request aborted'))
+            onerror: (err) => finalize(reject, new Error(err?.error || err?.statusText || 'Lỗi kết nối mạng')),
+            ontimeout: () => finalize(reject, new Error('Quá thời gian chờ HTTP')),
+            onabort: () => finalize(reject, new Error('Yêu cầu bị hủy'))
           });
         } catch (e) { finalize(reject, e); }
       });
@@ -473,7 +1174,7 @@
     try { origin = new URL(ref).origin; } catch {}
     return {
       'accept': '*/*',
-      'accept-language': 'en-US,en;q=0.9,vi;q=0.8',
+      'accept-language': 'vi,en;q=0.9,en-US;q=0.8',
       'cache-control': 'no-cache',
       'pragma': 'no-cache',
       'referer': `${origin}/`
@@ -590,7 +1291,7 @@
       osVersion: '10',
       cookies: true,
       flashVersion: 'no check',
-      lang: 'en-US',
+      lang: 'vi-VN',
       client_id: cid,
       pathname: urlObj.pathname,
       href: urlObj.href,
@@ -637,7 +1338,7 @@
       let retries = 0;
       while (true) {
         try {
-          updateStatus(`Processing widget step ${step}/${totalSteps}...`, { spin: true });
+          updateStatus(`Widget: đang xử lý bước ${step}/${totalSteps}...`, { spin: true });
           clientRes = await httpRequest(clientUrl, {
             method: 'POST', body: postBody, headers: getFormHeaders(), timeoutMs: 30000
           });
@@ -653,8 +1354,8 @@
       const verifiedDetails = sanitizeClientChallenge(clientRes.responseText, initialDetails);
       const wait = step > 1 ? parsed.nextWaitSeconds : parsed.waitSeconds;
       if (wait > 0) {
-        updateStatus(`Holding step countdown (${step}/${totalSteps})...`, { spin: true });
-        setCountdown(wait * 1000, `Step ${step}/${totalSteps}`);
+        updateStatus(`Đang đếm ngược bước ${step}/${totalSteps}...`, { spin: true });
+        setCountdown(wait * 1000, `Bước ${step}/${totalSteps}`);
         await sleep(wait * 1000);
       }
 
@@ -678,7 +1379,7 @@
         const j = JSON.parse(stepRes.responseText.trim());
         stepData = Array.isArray(j) ? j[0] : j;
       } catch {
-        throw new Error('Malformed widget JSON reply');
+        throw new Error('Dữ liệu widget không đúng định dạng JSON');
       }
 
       if (!stepData?.id) {
@@ -726,8 +1427,8 @@
       const iframe = document.querySelector('iframe[src*="recaptcha/api2/anchor"], iframe[src*="recaptcha"]');
       if (iframe) {
         iframe.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        iframe.style.outline = '3px solid #ffba42';
-        iframe.style.boxShadow = '0 0 16px #ffba42';
+        iframe.style.outline = '3px solid #38bdf8';
+        iframe.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.6)';
         try {
           const doc = iframe.contentDocument || iframe.contentWindow?.document;
           const box = doc?.querySelector('#recaptcha-anchor, .recaptcha-checkbox');
@@ -742,7 +1443,7 @@
 
   async function resolveRecaptchaInteraction() {
     state.ui.captchaBanner.classList.add('show');
-    updateStatus('Action required: solve the on-page reCAPTCHA', { tone: 'warn', spin: true });
+    updateStatus('Cần giải reCAPTCHA trên trang...', { tone: 'warn', spin: true });
     triggerRecaptchaAnchor();
 
     const deadline = Date.now() + CONFIG.recaptchaWaitMs;
@@ -752,7 +1453,7 @@
         if (t) return t;
         await sleep(500);
       }
-      throw new Error('reCAPTCHA waiting window timed out');
+      throw new Error('Hết thời gian chờ giải reCAPTCHA');
     } finally {
       state.ui.captchaBanner.classList.remove('show');
       const iframe = document.querySelector('iframe[src*="recaptcha"]');
@@ -775,13 +1476,13 @@
     const prefix = readInputVal('prefix') || password;
 
     if (!alias || !campaignId || !displayId) {
-      throw new Error('Campaign parameters not found in DOM');
+      throw new Error('Không tìm thấy thông tin chiến dịch trên trang');
     }
 
     const hasCaptcha = Boolean(document.querySelector('[name="g-recaptcha-response"], .g-recaptcha, iframe[src*="recaptcha"]'));
     const token = hasCaptcha ? await resolveRecaptchaInteraction() : '';
 
-    updateStatus('Requesting target link info...', { spin: true });
+    updateStatus('Đang gửi mã lấy link đích...', { spin: true });
     const host = detectBackendHost();
     const payload = serializeParams({
       password, alias, campaign_id: campaignId, display_id: displayId,
@@ -798,9 +1499,18 @@
     if (res.status < 200 || res.status >= 400) throw new Error(`HTTP ${res.status}`);
     let data;
     try { data = JSON.parse(res.responseText.trim()); }
-    catch { throw new Error('Response is not valid JSON'); }
+    catch { throw new Error('Máy chủ trả về dữ liệu không hợp lệ'); }
 
-    if (!data?.success || !data?.url) throw new Error('API refused password or returned empty URL');
+    if (!data?.success || !data?.url) throw new Error('Mã không hợp lệ hoặc máy chủ từ chối');
+
+    // Auto-fill input on page
+    const codeInput = document.querySelector('input[name="code"], input#code');
+    if (codeInput) {
+      codeInput.value = password;
+      codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+      codeInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     presentResult(String(data.url));
 
     void httpRequest(`${host}/widget/click.html`, {
@@ -814,14 +1524,14 @@
 
   function cleanTaskDomain(raw) {
     let str = String(raw || '').trim();
-    if (!str) throw new Error('Input URL is empty');
+    if (!str) throw new Error('Chưa nhập URL nhiệm vụ');
     if (!/^[a-z][a-z\d+.-]*:\/\//i.test(str)) str = `https://${str}`;
     let u;
     try { u = new URL(str); }
-    catch { throw new Error('Invalid URL format'); }
+    catch { throw new Error('Định dạng URL không hợp lệ'); }
     if (u.protocol === 'http:') u.protocol = 'https:';
     if (!u.hostname || /link4m\.(?:com|net|org|app)$/i.test(u.hostname)) {
-      throw new Error('Must specify the destination task domain, not link4m itself');
+      throw new Error('Hãy nhập URL trang web nhiệm vụ, không phải link4m');
     }
     return u.href;
   }
@@ -840,29 +1550,29 @@
 
     try {
       state.currentUrl = url;
-      updateStatus('Connecting to task domain...', { spin: true });
+      updateStatus('Đang kết nối tới trang web nhiệm vụ...', { spin: true });
       const mainDoc = await httpRequest(url, { headers: getBaseHeaders(url), timeoutMs: 30000 });
-      if (mainDoc.status < 200 || mainDoc.status >= 400) throw new Error('Unable to reach task domain');
+      if (mainDoc.status < 200 || mainDoc.status >= 400) throw new Error('Không thể truy cập trang nhiệm vụ');
       state.currentUrl = mainDoc.finalUrl || url;
 
       const widgetEntries = locateWidgetScripts(mainDoc.responseText);
-      if (!widgetEntries.length) throw new Error('No widget script found in target page');
+      if (!widgetEntries.length) throw new Error('Không tìm thấy widget lấy mã trên trang');
 
       const validWidgets = (await Promise.all(widgetEntries.map(fetchWidgetDoc))).filter(Boolean);
-      if (!validWidgets.length) throw new Error('No compatible widget sessions discovered');
+      if (!validWidgets.length) throw new Error('Không có widget nào hợp lệ');
 
-      updateStatus(`Dispatching ${validWidgets.length} widget session(s)...`, { spin: true });
+      updateStatus(`Đang xử lý ${validWidgets.length} phiên widget...`, { spin: true });
       const outcomes = await Promise.allSettled(validWidgets.map(resolveWidgetFlow));
       const successful = outcomes.find((o) => o.status === 'fulfilled' && o.value);
       if (!successful) {
         const failure = outcomes.find((o) => o.status === 'rejected');
-        throw failure?.reason || new Error('Widget code acquisition failed');
+        throw failure?.reason || new Error('Không lấy được mã từ widget');
       }
 
       await submitPasscodePayload(successful.value);
     } catch (err) {
       console.error('[bypass-l4m]', err);
-      updateStatus(`✗ ${err.message || 'Operation error'}`, { tone: 'err' });
+      updateStatus(`✗ ${err.message || 'Lỗi xảy ra'}`, { tone: 'err' });
     } finally {
       state.busy = false;
       refreshActionButtons();
@@ -1051,7 +1761,7 @@
       let targetDomain = meta.exactDomains[0] || null;
 
       if (!targetDomain) {
-        updateStatus('Analyzing instruction visual elements...', { spin: true });
+        updateStatus('Đang phân tích hình ảnh hướng dẫn...', { spin: true });
         const deadline = Date.now() + CONFIG.imageWaitMs;
         let cands = [];
         while (Date.now() < deadline) {
@@ -1061,25 +1771,25 @@
         }
 
         for (const [idx, cand] of cands.slice(0, CONFIG.maxImageCandidates).entries()) {
-          updateStatus(`OCR inspection (${idx + 1}/${Math.min(cands.length, CONFIG.maxImageCandidates)})...`, { spin: true });
+          updateStatus(`Đang đọc ảnh OCR (${idx + 1}/${Math.min(cands.length, CONFIG.maxImageCandidates)})...`, { spin: true });
           targetDomain = await executeOcrPipeline(cand, meta);
           if (targetDomain) break;
         }
       }
 
       if (!targetDomain) {
-        updateStatus('Task domain not detected automatically. Manual entry required.', { tone: 'warn' });
+        updateStatus('Không tự nhận diện được tên miền. Vui lòng nhập thủ công.', { tone: 'warn' });
         return;
       }
 
       const fullUrl = `https://${targetDomain}`;
       state.ui.taskInput.value = fullUrl;
-      updateStatus(`✓ Target domain detected: ${targetDomain}`, { tone: 'ok' });
+      updateStatus(`✓ Đã nhận diện trang mục tiêu: ${targetDomain}`, { tone: 'ok' });
       state.autoDetecting = false;
       refreshActionButtons();
       await startBypassProcess(fullUrl);
     } catch (e) {
-      updateStatus(`Auto-detection fault: ${e.message}`, { tone: 'warn' });
+      updateStatus(`Lỗi nhận diện tự động: ${e.message}`, { tone: 'warn' });
     } finally {
       state.autoDetecting = false;
       refreshActionButtons();
@@ -1088,7 +1798,7 @@
 
   async function awaitPageDirective() {
     const deadline = Date.now() + CONFIG.pageWaitMs;
-    updateStatus('Waiting for instructions content...', { spin: true });
+    updateStatus('Đang đợi nội dung nhiệm vụ...', { spin: true });
     while (Date.now() < deadline) {
       const wrapper = document.getElementById('advertise-html-wrapper');
       if (wrapper && wrapper.innerHTML.trim()) {
@@ -1097,7 +1807,7 @@
       }
       await sleep(350);
     }
-    updateStatus('Instruction container timed out. Enter task URL manually.', { tone: 'warn' });
+    updateStatus('Hết thời gian chờ nội dung. Hãy nhập URL thủ công.', { tone: 'warn' });
     return false;
   }
 
@@ -1116,7 +1826,7 @@
       }
     } catch (err) {
       console.error('[bypass-l4m] Boot error', err);
-      updateStatus('Initialization fault. Manual URL bypass ready.', { tone: 'warn' });
+      updateStatus('Lỗi khởi tạo. Sẵn sàng nhập URL thủ công.', { tone: 'warn' });
     }
   }
 
