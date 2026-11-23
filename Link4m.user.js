@@ -773,47 +773,44 @@
 
   function cleanDomElements() {
     try {
-      // 1. Remove video container (Tìm mọi container chứa iframe youtube hoặc tiêu đề video)
+      // 1. Remove ONLY video elements, do not remove parent cards/containers
       for (const el of document.querySelectorAll('iframe[src*="youtube"], iframe[src*="youtu.be"]')) {
-        const box = el.closest('.card, .row, .col-12, div:has(iframe)') || el;
-        box.remove();
-      }
-
-      // Check headings mentioning video
-      for (const h of document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, div')) {
-        const txt = (h.textContent || '').trim();
-        if (/VIDEO HƯỚNG DẪN CÁCH LẤY MÃ/i.test(txt)) {
-          const container = h.closest('.card, .row, .col-12, div[class*="video"]') || h;
-          container.remove();
+        el.style.display = 'none';
+        if (el.parentElement && el.parentElement.children.length === 1) {
+          el.parentElement.style.display = 'none';
         }
       }
 
-      // 2. Ensure instructions container (advertise-html-wrapper) is ALWAYS visible
+      for (const h of document.querySelectorAll('h1, h2, h3, h4, h5, h6, p')) {
+        const txt = (h.textContent || '').trim();
+        if (/VIDEO HƯỚNG DẪN CÁCH LẤY MÃ/i.test(txt)) {
+          h.style.display = 'none';
+        }
+      }
+
+      // 2. Filter advertise-html-wrapper to retain ONLY Steps 1, 2, 3
       const wrapper = document.getElementById('advertise-html-wrapper');
       if (wrapper) {
         wrapper.style.display = 'block';
-        wrapper.style.visibility = 'visible';
-        wrapper.style.opacity = '1';
 
-        // Remove notes
-        const paras = wrapper.querySelectorAll('p, div, span');
-        for (const el of paras) {
+        // Hide notes
+        for (const el of wrapper.querySelectorAll('p, div, span')) {
           const t = el.textContent || '';
           if (/Lưu ý:\s*Vui lòng làm theo đúng hướng dẫn|Sử dụng trình duyệt Chrome|KHÔNG Click vào quảng cáo|KHÔNG dùng trình duyệt Ẩn danh/i.test(t)) {
-            el.remove();
+            el.style.display = 'none';
           }
           if (/Bước\s*[456]\s*[:.\-]/i.test(t)) {
-            el.remove();
+            el.style.display = 'none';
           }
         }
       }
 
-      // 3. Remove footer copyright and replace with customized branding
-      for (const el of document.querySelectorAll('footer, [class*="footer"], div:has(> a[href*="link4m.com"])')) {
-        el.remove();
+      // 3. Hide Link4m footer ads and copyright
+      for (const el of document.querySelectorAll('footer, .footer, [class*="footer"], .ready-to-earn')) {
+        el.style.display = 'none';
       }
 
-      // Check if our custom footer already exists
+      // Custom footer
       if (!document.getElementById('duy-custom-footer') && document.body) {
         const footer = document.createElement('div');
         footer.id = 'duy-custom-footer';
@@ -825,7 +822,7 @@
         document.body.appendChild(footer);
       }
 
-      // Inject custom header banner if not present
+      // Custom header
       if (!document.getElementById('duy-custom-header') && document.body) {
         const header = document.createElement('div');
         header.id = 'duy-custom-header';
