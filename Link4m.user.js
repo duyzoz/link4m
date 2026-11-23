@@ -771,33 +771,17 @@
       e.stopImmediatePropagation();
     }
     try {
-      updateStatus('Đang làm mới nhiệm vụ & xóa session...', { tone: 'warn', spin: true });
+      updateStatus('Đang làm mới nhiệm vụ...', { tone: 'warn', spin: true });
       if (state.ui.btnSwitch) {
         state.ui.btnSwitch.disabled = true;
         state.ui.btnSwitch.textContent = 'Đang đổi...';
       }
 
-      // 1. Wipe all local and session storages
+      // 1. Wipe local and session storages
       try { localStorage.clear(); } catch {}
       try { sessionStorage.clear(); } catch {}
 
-      // 2. Clear client cookies across all root domain variations
-      try {
-        const cookies = document.cookie.split(';');
-        for (const cookie of cookies) {
-          const eqPos = cookie.indexOf('=');
-          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${location.hostname}`;
-          const parts = location.hostname.split('.');
-          if (parts.length > 1) {
-            const rootDomain = parts.slice(-2).join('.');
-            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
-          }
-        }
-      } catch {}
-
-      // 3. Generate fresh randomized Client ID and spoofed fingerprinters
+      // 2. Generate fresh randomized Client ID and spoofed fingerprinters
       const freshCid = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
       try {
         if (typeof GM_setValue === 'function') {
@@ -806,49 +790,11 @@
         }
       } catch {}
 
-      // 4. Send background abort/reset signals to the server endpoints
-      const host = detectBackendHost();
-      const alias = readInputVal('alias');
-      const campaignId = readInputVal('campaign_id');
-      const displayId = readInputVal('display_id');
+      updateStatus('Đang tải lại trang...', { tone: 'info', spin: true });
+      await sleep(300);
 
-      if (alias) {
-        const resetPayload = serializeParams({
-          alias,
-          campaign_id: campaignId || '',
-          display_id: displayId || '',
-          refresh: '1',
-          action: 'switch_campaign',
-          ts: Date.now()
-        });
-
-        await Promise.allSettled([
-          httpRequest(`${host}/links/reset-session`, {
-            method: 'POST',
-            headers: getFormHeaders(location.href),
-            body: resetPayload,
-            timeoutMs: 3000
-          }),
-          httpRequest(`${location.origin}/links/reset`, {
-            method: 'POST',
-            headers: getFormHeaders(location.href),
-            body: resetPayload,
-            timeoutMs: 3000
-          })
-        ]);
-      }
-
-      updateStatus('Đang tải trang nhiệm vụ mới...', { tone: 'info', spin: true });
-      await sleep(350);
-
-      // 5. Navigate with anti-cache timestamp and clear token parameters
-      const cleanUrl = new URL(location.href);
-      cleanUrl.searchParams.delete('token');
-      cleanUrl.searchParams.delete('uuid');
-      cleanUrl.searchParams.set('_l4m_switch', String(Date.now()));
-      cleanUrl.searchParams.set('reload', 'true');
-
-      window.location.replace(cleanUrl.href);
+      // Reload EXACT current URL cleanly without appending unknown query params that trigger /go/not-found
+      window.location.reload();
     } catch (err) {
       console.error('[bypass-l4m] Switch error', err);
       window.location.reload();
