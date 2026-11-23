@@ -78,39 +78,19 @@
       overflow-x: hidden !important;
     }
 
-    /* Clean elements per specifications */
+    /* Remove footer copyright and ads */
     footer,
     .footer,
     [class*="footer"],
     #footer,
     [id*="footer"],
-    .container-fluid:has(footer),
-    div:has(> a[href*="link4m.com"]),
-    div:has(> p:contains("Copyrights")),
-    iframe[src*="youtube"],
-    iframe[src*="youtu.be"],
-    div:has(> iframe[src*="youtube"]),
-    div:has(> iframe[src*="youtu.be"]),
-    div:has(> h4:contains("Video hướng dẫn")),
-    div:has(> h3:contains("Video hướng dẫn")),
-    div:has(> p:contains("Video hướng dẫn")),
-    .video-guide,
-    #video-guide,
-    .section-video,
-    div:has(> a[href*="register"]),
-    div:has(> a[href*="login"]),
-    .ready-to-earn,
-    section:has(h2:contains("KIẾM TIỀN")),
-    div:has(> h2:contains("SẴN SÀNG ĐỂ KIẾM TIỀN")),
-    div:has(> h3:contains("SẴN SÀNG ĐỂ KIẾM TIỀN")),
-    div:has(> p:contains("Rút gọn link kiếm tiền")) {
+    .ready-to-earn {
       display: none !important;
     }
 
     /* Refine task instructions card */
     #advertise-html-wrapper,
-    .instruction-wrapper,
-    .card:has(#advertise-html-wrapper) {
+    .instruction-wrapper {
       background: rgba(13, 25, 48, 0.72) !important;
       backdrop-filter: blur(16px) !important;
       -webkit-backdrop-filter: blur(16px) !important;
@@ -134,9 +114,7 @@
     /* Style the input form container */
     form:has(input[name="code"]),
     form:has(input#code),
-    .input-code-wrapper,
-    div:has(> input[name="code"]),
-    div:has(> input#code) {
+    .input-code-wrapper {
       background: rgba(13, 25, 48, 0.85) !important;
       backdrop-filter: blur(20px) !important;
       border: 1px solid rgba(56, 189, 248, 0.3) !important;
@@ -177,9 +155,6 @@
 
     /* Style continue button */
     button#btn-continue,
-    button:has(span:contains("Click vào đây để tiếp tục")),
-    button:contains("Click vào đây để tiếp tục"),
-    a:contains("Click vào đây để tiếp tục"),
     .btn-success {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
       border: none !important;
@@ -798,9 +773,28 @@
 
   function cleanDomElements() {
     try {
-      // 1. Remove unwanted notes and specific step texts (steps 4, 5, 6)
+      // 1. Remove video container (Tìm mọi container chứa iframe youtube hoặc tiêu đề video)
+      for (const el of document.querySelectorAll('iframe[src*="youtube"], iframe[src*="youtu.be"]')) {
+        const box = el.closest('.card, .row, .col-12, div:has(iframe)') || el;
+        box.remove();
+      }
+
+      // Check headings mentioning video
+      for (const h of document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, div')) {
+        const txt = (h.textContent || '').trim();
+        if (/VIDEO HƯỚNG DẪN CÁCH LẤY MÃ/i.test(txt)) {
+          const container = h.closest('.card, .row, .col-12, div[class*="video"]') || h;
+          container.remove();
+        }
+      }
+
+      // 2. Ensure instructions container (advertise-html-wrapper) is ALWAYS visible
       const wrapper = document.getElementById('advertise-html-wrapper');
       if (wrapper) {
+        wrapper.style.display = 'block';
+        wrapper.style.visibility = 'visible';
+        wrapper.style.opacity = '1';
+
         // Remove notes
         const paras = wrapper.querySelectorAll('p, div, span');
         for (const el of paras) {
@@ -814,13 +808,13 @@
         }
       }
 
-      // 2. Remove footer copyright and replace with customized branding
+      // 3. Remove footer copyright and replace with customized branding
       for (const el of document.querySelectorAll('footer, [class*="footer"], div:has(> a[href*="link4m.com"])')) {
         el.remove();
       }
 
       // Check if our custom footer already exists
-      if (!document.getElementById('duy-custom-footer')) {
+      if (!document.getElementById('duy-custom-footer') && document.body) {
         const footer = document.createElement('div');
         footer.id = 'duy-custom-footer';
         footer.className = 'duy-page-footer';
@@ -828,7 +822,7 @@
           ${SVG_LOGO_DUOI}
           <div class="duy-footer-copy">© 2026 Link4M-BYPASS by @duydepzai - All Rights Reserved.</div>
         `;
-        document.body?.appendChild(footer);
+        document.body.appendChild(footer);
       }
 
       // Inject custom header banner if not present
