@@ -68,7 +68,7 @@
   };
 
   const STYLES = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
     :host, :host * {
       box-sizing: border-box;
@@ -78,336 +78,387 @@
     }
 
     .root {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #f1f5f9;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      color: #1a1a1a;
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
+    /* Terminal Card - Retro Cream Theme */
     .panel {
       position: fixed;
-      right: 20px;
-      bottom: 20px;
-      width: min(390px, calc(100vw - 32px));
+      right: 24px;
+      bottom: 24px;
+      width: min(400px, calc(100vw - 32px));
       max-height: calc(100dvh - 40px);
       overflow-y: auto;
-      border-radius: 24px;
-      border: 1px solid rgba(56, 189, 248, 0.28);
-      background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(3, 7, 18, 0.98) 100%);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(56, 189, 248, 0.16);
+      border-radius: 12px;
+      border: 2px solid #1e2022;
+      background: #fdfbf7;
+      box-shadow: 6px 6px 0px #1e2022, 0 16px 36px rgba(0, 0, 0, 0.15);
       z-index: 2147483647;
       touch-action: none;
       scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+      scrollbar-color: #d1c7b7 transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .panel::-webkit-scrollbar {
       width: 5px;
     }
     .panel::-webkit-scrollbar-thumb {
-      background: rgba(56, 189, 248, 0.3);
+      background: #d1c7b7;
       border-radius: 10px;
     }
 
-    .head {
+    /* Mac / Unix Terminal Topbar */
+    .terminal-header {
+      background: #1e2022;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 8px;
       cursor: move;
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 2px solid #1e2022;
     }
 
-    .brand-svg-wrap {
+    .terminal-dots {
       display: flex;
+      gap: 6px;
       align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    .dot.red { background-color: #ff5f56; }
+    .dot.yellow { background-color: #ffbd2e; }
+    .dot.green { background-color: #27c93f; }
+
+    .terminal-title {
       flex: 1;
-      min-width: 0;
-    }
-
-    .brand-svg-wrap svg {
-      height: 28px;
-      width: auto;
-      max-width: 100%;
-    }
-
-    .badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      text-align: center;
+      font-size: 11.5px;
       font-weight: 700;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.14);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      padding: 2px 7px;
-      border-radius: 6px;
-      letter-spacing: 0.03em;
-    }
-
-    button {
-      font: inherit;
-      cursor: pointer;
-      outline: 0;
-      border: 0;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #e5e0d8;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: -12px;
     }
 
     .btn-min {
-      border-radius: 9px;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.06);
-      width: 28px;
-      height: 28px;
+      border: 1px solid #4a5056;
+      border-radius: 6px;
+      color: #cbd5e1;
+      background: #2b3036;
+      width: 24px;
+      height: 24px;
       display: grid;
       place-items: center;
-      font-size: 18px;
+      font-size: 15px;
+      cursor: pointer;
     }
 
     .btn-min:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: #ff5f56;
       color: #fff;
+      border-color: #ff5f56;
     }
 
-    .status-bar {
+    /* Brand banner inside cream card */
+    .brand-section {
+      padding: 12px 16px 10px;
+      border-bottom: 2px solid #ece4d8;
+      background: #f7f2e8;
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 13px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12.5px;
-      font-weight: 600;
-      min-height: 50px;
+      justify-content: space-between;
     }
 
-    .status-bar.info { color: #bae6fd; }
-    .status-bar.ok { color: #6ee7b7; }
-    .status-bar.warn { color: #fde047; }
-    .status-bar.err { color: #fca5a5; }
+    .badge-ver {
+      font-size: 10px;
+      font-weight: 700;
+      color: #634d28;
+      background: #ece4d8;
+      border: 1px solid #d4c8b6;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
 
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      border-top-color: #38bdf8;
-      animation: spin 0.8s linear infinite;
+    /* Terminal Logs Box */
+    .terminal-logs {
+      background: #181a1b;
+      margin: 12px 14px 6px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #2d3135;
+      color: #a6e22e;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .terminal-prompt {
+      color: #00d2ff;
+      font-weight: 700;
       flex-shrink: 0;
     }
 
+    .status-msg {
+      flex: 1;
+      color: #f8f8f2;
+      word-break: break-word;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .status-msg.ok { color: #a6e22e; }
+    .status-msg.warn { color: #fd971f; }
+    .status-msg.err { color: #ff5555; }
+    .status-msg.info { color: #66d9ef; }
+
+    .clock {
+      color: #fd971f;
+      background: rgba(253, 151, 31, 0.15);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 6px;
+      height: 14px;
+      background: #66d9ef;
+      vertical-align: middle;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink { 0%, 50% { opacity: 1; } 50.1%, 100% { opacity: 0; } }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #2d3135;
+      border-top-color: #66d9ef;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
     .spinner.off { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .msg {
-      flex: 1;
-      word-break: break-word;
-      letter-spacing: 0.01em;
-    }
-
-    .clock {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: 12px;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.1);
-      padding: 2px 6px;
-      border-radius: 5px;
-    }
-
     .progress-bar {
       height: 3px;
-      background: rgba(255, 255, 255, 0.06);
-      position: relative;
+      background: #e2d9cb;
+      margin: 0 14px;
+      border-radius: 2px;
+      overflow: hidden;
     }
 
     .progress-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #38bdf8, #10b981);
-      transition: width 0.25s linear;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      background: #1e2022;
+      transition: width 0.25s ease;
     }
 
     .banner {
       display: none;
-      margin: 12px 18px 0;
-      border-radius: 12px;
-      padding: 11px 14px;
-      font-size: 12px;
+      margin: 10px 14px 0;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 11.5px;
       font-weight: 700;
-      background: rgba(234, 179, 8, 0.14);
-      border: 1px solid rgba(234, 179, 8, 0.4);
-      color: #fef08a;
+      background: #fff3cd;
+      border: 1.5px solid #ffbd2e;
+      color: #856404;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
     }
-
     .banner.show { display: flex; }
 
+    /* Form and inputs */
     .form-wrap {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding: 16px 18px;
+      gap: 10px;
+      padding: 12px 14px 14px;
     }
 
     .input-box {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: rgba(2, 6, 23, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 0 14px;
-      transition: all 0.25s ease;
+      gap: 8px;
+      background: #fff;
+      border: 2px solid #1e2022;
+      border-radius: 8px;
+      padding: 0 10px;
+      box-shadow: 2px 2px 0px #1e2022;
+      transition: all 0.15s ease;
     }
 
     .input-box:focus-within {
-      border-color: #38bdf8;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #1e2022;
+    }
+
+    .input-prompt {
+      color: #78716c;
+      font-weight: 700;
+      font-size: 13px;
     }
 
     .url-input {
       border: 0;
       background: transparent;
-      padding: 12px 0;
-      color: #f8fafc;
-      font-size: 13px;
+      padding: 10px 0;
+      color: #1e2022;
+      font-size: 12.5px;
+      font-family: inherit;
       outline: 0;
       flex: 1;
       min-width: 0;
       user-select: text;
     }
-
-    .url-input::placeholder { color: #64748b; }
+    .url-input::placeholder { color: #a8a29e; }
     .url-input:disabled { opacity: 0.6; }
 
+    button {
+      font: inherit;
+      cursor: pointer;
+      outline: 0;
+      border: 2px solid #1e2022;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    button:active {
+      transform: translate(2px, 2px) !important;
+      box-shadow: 0px 0px 0px #1e2022 !important;
+    }
+
     .btn-main {
-      border-radius: 13px;
-      padding: 12px;
-      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-      color: #030712;
-      font-size: 14px;
+      padding: 11px;
+      background: #ffeb3b;
+      color: #1e2022;
+      font-size: 13px;
       font-weight: 800;
+      box-shadow: 3px 3px 0px #1e2022;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
     }
 
     .btn-main:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.45);
+      background: #ffee55;
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #1e2022;
     }
 
     .btn-main:disabled {
-      opacity: 0.45;
+      opacity: 0.5;
       cursor: not-allowed;
-      filter: none;
-      transform: none;
+      transform: none !important;
+      box-shadow: 2px 2px 0px #1e2022 !important;
     }
 
     .row-btns {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn-sec {
       flex: 1;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      background: rgba(56, 189, 248, 0.1);
-      color: #e0f2fe;
-      font-size: 12.5px;
+      padding: 8px 10px;
+      background: #f0e9dd;
+      color: #1e2022;
+      font-size: 12px;
       font-weight: 700;
+      box-shadow: 2px 2px 0px #1e2022;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 6px;
     }
 
     .btn-sec:hover {
-      background: rgba(56, 189, 248, 0.18);
-      border-color: rgba(56, 189, 248, 0.45);
-    }
-
-    .btn-switch {
-      border-color: rgba(245, 158, 11, 0.4);
-      background: rgba(245, 158, 11, 0.14);
-      color: #fef3c7;
-    }
-
-    .btn-switch:hover {
-      background: rgba(245, 158, 11, 0.24);
-      border-color: rgba(245, 158, 11, 0.6);
+      background: #e8ded0;
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px #1e2022;
     }
 
     .btn-discord {
-      border-color: rgba(99, 102, 241, 0.4);
-      background: rgba(99, 102, 241, 0.14);
-      color: #e0e7ff;
+      background: #e0e7ff;
+      color: #3730a3;
     }
-
     .btn-discord:hover {
-      background: rgba(99, 102, 241, 0.24);
-      border-color: rgba(99, 102, 241, 0.6);
+      background: #c7d2fe;
     }
 
     .discord-icon {
-      width: 17px;
-      height: 17px;
+      width: 15px;
+      height: 15px;
       fill: currentColor;
     }
 
     .pref-row {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       font-size: 11.5px;
-      color: #94a3b8;
+      color: #57534e;
       cursor: pointer;
       margin-top: 2px;
+      font-weight: 600;
     }
 
     .pref-row input {
-      accent-color: #38bdf8;
+      accent-color: #1e2022;
       width: 14px;
       height: 14px;
     }
 
+    /* Result Box in Retro Style */
     .result-panel {
       display: none;
-      margin: 0 18px 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      margin: 0 14px 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #e8f5e9;
+      border: 2px solid #1e2022;
+      box-shadow: 3px 3px 0px #1e2022;
     }
-
     .result-panel.show { display: block; }
 
     .result-header {
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: 0.8px;
-      color: #6ee7b7;
+      color: #1b5e20;
+      letter-spacing: 0.05em;
     }
 
     .result-content {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
-      background: rgba(2, 6, 23, 0.5);
-      border-radius: 9px;
-      padding: 9px;
-      margin: 8px 0;
-      max-height: 80px;
+      font-family: inherit;
+      font-size: 11px;
+      background: #fff;
+      border: 1px solid #1e2022;
+      border-radius: 6px;
+      padding: 7px;
+      margin: 6px 0;
+      max-height: 70px;
       overflow-y: auto;
       word-break: break-all;
-      color: #a7f3d0;
+      color: #1e2022;
       user-select: text;
     }
 
@@ -418,70 +469,57 @@
 
     .btn-act {
       flex: 1;
-      padding: 9px;
-      border-radius: 9px;
+      padding: 7px;
       font-weight: 800;
-      font-size: 12px;
+      font-size: 11.5px;
+      box-shadow: 2px 2px 0px #1e2022;
     }
 
     .btn-act.copy {
-      background: #10b981;
-      color: #022c22;
+      background: #a5d6a7;
+      color: #1e2022;
     }
-
-    .btn-act.copy:hover { filter: brightness(1.1); }
 
     .btn-act.open {
-      background: rgba(16, 185, 129, 0.2);
-      color: #d1fae5;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: #ffffff;
+      color: #1e2022;
     }
 
-    .btn-act.open:hover { background: rgba(16, 185, 129, 0.3); }
-
-    .panel-footer-logo {
-      padding: 10px 18px 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    /* Bottom footer in vintage card */
+    .panel-footer {
+      padding: 10px 14px 12px;
+      border-top: 2px solid #1e2022;
       display: flex;
       justify-content: center;
       align-items: center;
-      opacity: 0.85;
-      transition: opacity 0.2s;
-    }
-
-    .panel-footer-logo:hover {
-      opacity: 1;
-    }
-
-    .panel-footer-logo svg {
-      height: 22px;
-      width: auto;
-      max-width: 100%;
+      background: #1e2022;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
     }
 
     .fab-btn {
       display: none;
       position: fixed;
-      right: 20px;
-      bottom: 20px;
-      width: 52px;
-      height: 52px;
-      border-radius: 18px;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      background: linear-gradient(145deg, #0f172a, #030712);
-      color: #38bdf8;
-      font-size: 22px;
+      right: 24px;
+      bottom: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 2px solid #1e2022;
+      background: #ffeb3b;
+      color: #1e2022;
+      font-size: 20px;
       font-weight: 900;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.25);
+      box-shadow: 4px 4px 0px #1e2022;
       z-index: 2147483647;
       cursor: pointer;
       place-items: center;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
 
     .fab-btn:hover {
-      transform: scale(1.06);
-      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(56, 189, 248, 0.4);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #1e2022;
     }
 
     .fab-btn.show { display: grid; }
@@ -525,15 +563,15 @@
       <path d="M118 12 L152 68 L152 104 L118 50 Z" fill="url(#pGradMShade)" />
     </svg>
     <div style="display:flex;flex-direction:column;margin-left:8px;line-height:1;">
-      <span style="font-weight:800;font-size:13px;letter-spacing:-0.02em;color:#f8fafc;">Link4M-BYPASS</span>
-      <span style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:0.04em;">by @duydepzai</span>
+      <span style="font-weight:800;font-size:13px;letter-spacing:-0.02em;color:#1e2022;">Link4M-BYPASS</span>
+      <span style="font-size:9.5px;font-weight:700;color:#78716c;letter-spacing:0.04em;">by @duydepzai</span>
     </div>
   `;
 
   const SVG_LOGO_DUOI = `
     <div style="display:inline-flex;align-items:baseline;line-height:1;user-select:none;">
       <span style="color:#ffffff;font-weight:700;font-size:14px;letter-spacing:-0.04em;margin-right:2px;">Link</span>
-      <svg viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:10px;width:auto;vertical-align:baseline;">
+      <svg viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:11px;width:auto;vertical-align:baseline;">
         <defs>
           <linearGradient id="pFold4" x1="22" y1="43" x2="37" y2="43" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="#ffffff" />
@@ -572,17 +610,28 @@
   const MARKUP = `
     <div class="root">
       <div class="panel" id="panel">
-        <div class="head" id="dragHead">
-          <div class="brand-svg-wrap">
-            ${SVG_LOGO_DAU}
+        <div class="terminal-header" id="dragHead">
+          <div class="terminal-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
           </div>
-          <span class="badge">v3.0</span>
+          <span class="terminal-title">link4m_bypass.sh</span>
           <button type="button" class="btn-min" id="btnMin" title="Thu nhỏ">−</button>
         </div>
 
-        <div class="status-bar info" id="statusBar">
+        <div class="brand-section">
+          <div style="display:flex;align-items:center;">
+            ${SVG_LOGO_DAU}
+          </div>
+          <span class="badge-ver">v3.0 PEAK</span>
+        </div>
+
+        <div class="terminal-logs info" id="statusBar">
+          <span class="terminal-prompt">&gt;</span>
           <span class="spinner" id="spinner"></span>
-          <span class="msg" id="statusMsg">Đang khởi tạo hệ thống...</span>
+          <span class="status-msg info" id="statusMsg">Đang khởi tạo hệ thống...</span>
+          <span class="cursor-blink"></span>
           <span class="clock" id="statusClock"></span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -594,7 +643,7 @@
 
         <form class="form-wrap" id="mainForm" novalidate>
           <div class="input-box">
-            <span>🔗</span>
+            <span class="input-prompt">&gt; URL:</span>
             <input class="url-input" id="taskInput" type="text" inputmode="url" placeholder="URL nhiệm vụ (vd: example.com)" />
           </div>
           <button type="submit" class="btn-main" id="btnStart">⚡ Bắt đầu Bypass</button>
@@ -619,7 +668,7 @@
           </div>
         </div>
 
-        <div class="panel-footer-logo">
+        <div class="panel-footer">
           ${SVG_LOGO_DUOI}
         </div>
       </div>
@@ -729,7 +778,8 @@
     state.spinning = spin;
     if (!state.ui.statusMsg) return;
     state.ui.statusMsg.textContent = state.status;
-    state.ui.statusBar.className = `status-bar ${tone}`;
+    state.ui.statusMsg.className = `status-msg ${tone}`;
+    if (state.ui.statusBar) state.ui.statusBar.className = `terminal-logs ${tone}`;
     state.ui.spinner.classList.toggle('off', !spin);
   }
 
